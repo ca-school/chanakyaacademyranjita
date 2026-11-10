@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Exam Results - Year Wise</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 25px 5%;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      margin-bottom: 6px;
+      color: #38bdf8;
+    }
+
+    header p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .year-block {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      margin-bottom: 30px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    .year-header {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 14px 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 15px 20px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Status Badges */
+    .status-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .status-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: #64748b;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .btn-check-result {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #16a34a;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: 0.2s;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-check-result:hover {
+      background: #15803d;
+      transform: translateY(-1px);
+    }
+
+    .btn-disabled {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #e2e8f0;
+      color: #94a3b8;
+      border: 1px solid #cbd5e1;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: 50px 20px;
+      background: white;
+      border-radius: 12px;
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><i class="fa-solid fa-award"></i> Examination Results Portal</h1>
+    <p>Year-Wise Official Examination Result Links</p>
+  </header>
+
+  <div class="container" id="resultsContainer">
+    <div class="empty-msg">Loading Year-wise Exam Results...</div>
+  </div>
+
+  <!-- 🔥 FIREBASE REAL-TIME RESULT TABLE SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCoEId1hUmkzxv8ulqwJcLNSdXBaMVSlOk",
+      authDomain: "schoolsiteexamcontrol.firebaseapp.com",
+      projectId: "schoolsiteexamcontrol",
+      storageBucket: "schoolsiteexamcontrol.firebasestorage.app",
+      messagingSenderId: "754891419941",
+      appId: "1:754891419941:web:4f31debbeff534492feacc",
+      measurementId: "G-L6TYJBCW28"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const examsRef = collection(db, "exams");
+
+    const resultsContainer = document.getElementById("resultsContainer");
+
+    onSnapshot(examsRef, (snapshot) => {
+      const exams = [];
+      snapshot.forEach((docSnap) => {
+        exams.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      if (exams.length === 0) {
+        resultsContainer.innerHTML = `<div class="empty-msg">Abhi tak koi exam list nahi kiya gaya hai.</div>`;
+        return;
+      }
+
+      // Group Exams Year-Wise
+      const groupedByYear = {};
+      exams.forEach((exam) => {
+        const yr = exam.year || "Other";
+        if (!groupedByYear[yr]) groupedByYear[yr] = [];
+        groupedByYear[yr].push(exam);
+      });
+
+      // Sort Years Descending (e.g. 2026, 2025, 2024...)
+      const sortedYears = Object.keys(groupedByYear).sort((a, b) => b - a);
+
+      resultsContainer.innerHTML = "";
+
+      sortedYears.forEach((year) => {
+        const yearExams = groupedByYear[year].sort((a, b) => b.createdAt - a.createdAt);
+
+        const yearBlock = document.createElement("div");
+        yearBlock.className = "year-block";
+
+        let rowsHTML = "";
+        yearExams.forEach((exam, index) => {
+          const statusHTML = exam.isLive
+            ? `<span class="status-live"><i class="fa-solid fa-circle-check"></i> Result Live</span>`
+            : `<span class="status-pending"><i class="fa-regular fa-clock"></i> Result Awaited</span>`;
+
+          const actionButtonHTML = exam.isLive
+            ? `<a href="${exam.resultLink}" target="_blank" class="btn-check-result">
+                 Check Result <i class="fa-solid fa-arrow-up-right-from-square"></i>
+               </a>`
+            : `<button class="btn-disabled" disabled>
+                 Link Disabled <i class="fa-solid fa-lock"></i>
+               </button>`;
+
+          rowsHTML += `
+            <tr>
+              <td style="width: 70px;">#${index + 1}</td>
+              <td><strong>${exam.examName}</strong></td>
+              <td>${statusHTML}</td>
+              <td>${actionButtonHTML}</td>
+            </tr>
+          `;
+        });
+
+        yearBlock.innerHTML = `
+          <div class="year-header">
+            <i class="fa-regular fa-calendar-check"></i>
+            <span>Academic Session / Year - ${year}</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Examination Name</th>
+                <th>Status</th>
+                <th>Result Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHTML}
+            </tbody>
+          </table>
+        `;
+
+        resultsContainer.appendChild(yearBlock);
+      });
+    });
+  </script>
+</body>
+</html>
