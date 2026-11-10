@@ -13,1917 +13,443 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600;1,9..144,700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* ═══════════════════════════════════════════════════
-   DESIGN TOKENS & RESET
-═══════════════════════════════════════════════════ */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-}
-
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 :root {
-  --navy: #0B132B;
-  --navy-2: #162244;
-  --navy-3: #1E2F5D;
-  --saffron: #FF8A00;
-  --gold: #FFB703;
-  --gold-light: #FFF3D1;
-  --royal-blue: #2563EB;
-  --sky: #0EA5E9;
-  --emerald: #10B981;
-  --rose: #F43F5E;
-  --violet: #7C3AED;
-  --bg-cream: #FDFBF7;
-  --bg-warm: #F5F0E6;
-  --card-bg: #FFFFFF;
-  --text-main: #0F172A;
-  --text-muted: #475569;
-  --text-soft: #64748B;
+  --navy: #0B132B; --navy-2: #162244; --navy-3: #1E2F5D;
+  --saffron: #FF8A00; --gold: #FFB703; --gold-light: #FFF3D1;
+  --royal-blue: #2563EB; --sky: #0EA5E9; --emerald: #10B981;
+  --rose: #F43F5E; --violet: #7C3AED;
+  --bg-cream: #FDFBF7; --bg-warm: #F5F0E6; --card-bg: #FFFFFF;
+  --text-main: #0F172A; --text-muted: #475569; --text-soft: #64748B;
   --border-light: rgba(15, 23, 42, 0.08);
   --shadow-sm: 0 4px 20px -2px rgba(11, 19, 43, 0.06);
   --shadow-md: 0 16px 40px -8px rgba(11, 19, 43, 0.1);
   --shadow-lg: 0 24px 60px -12px rgba(11, 19, 43, 0.16);
-  --shadow-glow: 0 12px 32px -4px rgba(255, 138, 0, 0.35);
-  --radius-sm: 14px;
-  --radius-md: 22px;
-  --radius-lg: 32px;
+  --radius-sm: 14px; --radius-md: 22px; --radius-lg: 32px;
   --live-ticker-offset: 0px;
 }
-
-body.has-live-result {
-  --live-ticker-offset: 40px;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 120px;
-}
-
-body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: var(--bg-cream);
-  color: var(--text-main);
-  overflow-x: hidden;
-  line-height: 1.6;
-}
-
-h1, h2, h3, h4, .font-heading {
-  font-family: 'Outfit', sans-serif;
-}
-
-.font-serif-italic {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 600;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
+body.has-live-result { --live-ticker-offset: 40px; }
+html { scroll-behavior: smooth; scroll-padding-top: 120px; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-cream); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
+h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
+.font-serif-italic { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; }
+a { text-decoration: none; color: inherit; }
 .bg-grid-pattern {
-  background-image: 
-    radial-gradient(rgba(11, 19, 43, 0.07) 1px, transparent 1px),
-    radial-gradient(rgba(255, 138, 0, 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: 0 0, 16px 16px;
+  background-image: radial-gradient(rgba(11, 19, 43, 0.07) 1px, transparent 1px), radial-gradient(rgba(255, 138, 0, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px; background-position: 0 0, 16px 16px;
 }
+@keyframes drawStroke { to { stroke-dashoffset: 0; } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes blinkDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
 
-@keyframes drawStroke {
-  to { stroke-dashoffset: 0; }
-}
-@keyframes spinSlow {
-  to { transform: rotate(360deg); }
-}
-
-/* ═══════════════════════════════════════════════════
-   1. TOP MARQUEE ANNOUNCEMENT BAR & LIVE RESULT TICKER
-═══════════════════════════════════════════════════ */
+/* 1. TOP MARQUEE & LIVE RESULT TICKER */
 .top-ticker {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 36px;
-  background: var(--navy);
-  color: rgba(255, 255, 255, 0.88);
-  z-index: 9003;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
+  position: fixed; top: 0; left: 0; right: 0; height: 36px;
+  background: var(--navy); color: rgba(255, 255, 255, 0.88);
+  z-index: 9003; overflow: hidden; display: flex; align-items: center;
   border-bottom: 1px solid rgba(255, 183, 3, 0.2);
 }
-
-.ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: tickerScroll 32s linear infinite;
-}
-
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
-.ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 28px;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
-.ticker-badge {
-  background: linear-gradient(90deg, var(--saffron), var(--gold));
-  color: var(--navy);
-  font-weight: 800;
-  font-size: 10.5px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ticker-dot {
-  color: var(--gold);
-  font-size: 14px;
-}
-
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+.ticker-track { display: flex; white-space: nowrap; animation: tickerScroll 32s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item { display: inline-flex; align-items: center; gap: 12px; padding: 0 28px; font-size: 12.5px; font-weight: 500; }
+.ticker-badge { background: linear-gradient(90deg, var(--saffron), var(--gold)); color: var(--navy); font-weight: 800; font-size: 10.5px; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ticker-dot { color: var(--gold); font-size: 14px; }
 
 /* 🔴 DYNAMIC LIVE RESULT TICKER (STATIC LEFT & RIGHT, SCROLLING MIDDLE AT 32s) */
 #live-result-ticker {
-  display: none;
-  position: fixed;
-  top: 36px;
-  left: 0;
-  right: 0;
-  height: 40px;
+  display: none; position: fixed; top: 36px; left: 0; right: 0; height: 40px;
   background: linear-gradient(90deg, #DC2626 0%, #B91C1C 50%, #991B1B 100%);
-  color: #ffffff;
-  z-index: 9002;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff; z-index: 9002; overflow: hidden;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4); border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-
-#live-result-ticker.active {
-  display: flex;
-}
-
-#live-result-ticker-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  text-decoration: none;
-}
-
-/* Static Left Box */
+#live-result-ticker.active { display: flex; }
+#live-result-ticker-link { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; color: #fff; }
 .live-static-left {
-  flex-shrink: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 12px 0 16px;
-  background: #B91C1C;
-  z-index: 2;
-  box-shadow: 6px 0 14px rgba(0, 0, 0, 0.22);
+  flex-shrink: 0; height: 100%; display: flex; align-items: center; padding: 0 10px 0 14px;
+  background: #B91C1C; z-index: 2; box-shadow: 6px 0 14px rgba(0, 0, 0, 0.22);
 }
-
 .live-pulse-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  color: #DC2626;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 800;
-  font-size: 11px;
-  padding: 4px 11px;
-  border-radius: 99px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  display: inline-flex; align-items: center; gap: 6px; background: #ffffff; color: #DC2626;
+  font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 11px; padding: 4px 11px;
+  border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
 }
-
-.live-pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #DC2626;
-  animation: blinkDot 1s infinite;
-}
-
-/* Scrolling Middle Viewport (Same 32s speed as Top Ticker) */
-.live-ticker-viewport {
-  flex: 1;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.live-ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: tickerScroll 32s linear infinite;
-}
-
-#live-result-ticker:hover .live-ticker-track {
-  animation-play-state: paused;
-}
-
-.live-ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 28px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-/* Static Right Box */
+.live-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #DC2626; animation: blinkDot 1s infinite; }
+.live-ticker-viewport { flex: 1; overflow: hidden; height: 100%; display: flex; align-items: center; }
+.live-ticker-track { display: flex; white-space: nowrap; animation: tickerScroll 32s linear infinite; }
+#live-result-ticker:hover .live-ticker-track { animation-play-state: paused; }
+.live-ticker-item { display: inline-flex; align-items: center; gap: 14px; padding: 0 28px; font-family: 'Outfit', sans-serif; font-size: 13.5px; font-weight: 700; }
 .live-static-right {
-  flex-shrink: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 16px 0 12px;
-  background: #991B1B;
-  z-index: 2;
-  box-shadow: -6px 0 14px rgba(0, 0, 0, 0.22);
+  flex-shrink: 0; height: 100%; display: flex; align-items: center; padding: 0 14px 0 10px;
+  background: #991B1B; z-index: 2; box-shadow: -6px 0 14px rgba(0, 0, 0, 0.22);
 }
-
 .live-ticker-cta {
-  background: var(--gold);
-  color: var(--navy);
-  font-family: 'Outfit', sans-serif;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 4px 12px;
-  border-radius: 99px;
-  white-space: nowrap;
+  background: var(--gold); color: var(--navy); font-family: 'Outfit', sans-serif;
+  font-size: 11.5px; font-weight: 800; padding: 4px 12px; border-radius: 99px; white-space: nowrap;
 }
 
-@keyframes blinkDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(0.8); }
-}
-
-/* ═══════════════════════════════════════════════════
-   2. SMART ADAPTIVE NAVBAR + DYNAMIC PILL + ADMIN ICON
-═══════════════════════════════════════════════════ */
+/* 2. NAVBAR (FULL ON DESKTOP, COMPACT HAMBURGER ONLY ON MOBILE) */
 .navbar-wrap {
-  position: fixed;
-  top: calc(36px + var(--live-ticker-offset));
-  left: 0;
-  right: 0;
-  z-index: 9000;
-  padding: 14px 24px;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed; top: calc(36px + var(--live-ticker-offset)); left: 0; right: 0;
+  z-index: 9000; padding: 14px 24px; transition: all 0.35s ease;
 }
-
-.navbar-wrap.scrolled {
-  padding: 8px 16px;
-}
-
+.navbar-wrap.scrolled { padding: 8px 16px; }
 .navbar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 999px;
-  padding: 8px 12px 8px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 10px 30px -10px rgba(11, 19, 43, 0.08);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 999px;
+  padding: 8px 12px 8px 16px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 10px 30px -10px rgba(11, 19, 43, 0.08); transition: all 0.35s ease;
 }
-
 .navbar-wrap.scrolled .navbar-inner {
-  max-width: 960px;
-  background: rgba(11, 19, 43, 0.92);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 40px -12px rgba(11, 19, 43, 0.35);
+  max-width: 980px; background: rgba(11, 19, 43, 0.94);
+  border-color: rgba(255, 255, 255, 0.12); box-shadow: 0 20px 40px -12px rgba(11, 19, 43, 0.35);
 }
-
-.brand-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+.brand-link { display: flex; align-items: center; gap: 12px; }
 .brand-logo-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #fff;
-  padding: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
+  width: 44px; height: 44px; border-radius: 50%; background: #fff; padding: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-
-.brand-link:hover .brand-logo-wrap {
-  transform: rotate(-8deg) scale(1.06);
-}
-
-.brand-logo-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.brand-name {
-  font-family: 'Outfit', sans-serif;
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--navy);
-  line-height: 1.1;
-  letter-spacing: -0.3px;
-  transition: color 0.3s ease;
-}
-
-.brand-loc {
-  font-size: 11px;
-  color: var(--text-soft);
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
+.brand-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.brand-name { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+.brand-loc { font-size: 11px; color: var(--text-soft); font-weight: 500; }
 .navbar-wrap.scrolled .brand-name { color: #ffffff; }
-.navbar-wrap.scrolled .brand-loc { color: rgba(255,255,255,0.6); }
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.nav-links a.nav-item {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 8px 14px;
-  border-radius: 99px;
-  transition: all 0.25s ease;
-}
-
-.nav-links a.nav-item:hover {
-  color: var(--navy);
-  background: rgba(15, 23, 42, 0.06);
-}
-
-.navbar-wrap.scrolled .nav-links a.nav-item {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.navbar-wrap.scrolled .nav-links a.nav-item:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-}
-
+.navbar-wrap.scrolled .brand-loc { color: rgba(255,255,255,0.65); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a.nav-item { font-size: 14px; font-weight: 600; color: var(--text-muted); padding: 8px 14px; border-radius: 99px; transition: 0.25s; }
+.nav-links a.nav-item:hover { color: var(--navy); background: rgba(15, 23, 42, 0.06); }
+.navbar-wrap.scrolled .nav-links a.nav-item { color: rgba(255, 255, 255, 0.8); }
+.navbar-wrap.scrolled .nav-links a.nav-item:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
 .nav-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--saffron), #FF5E00);
-  color: #fff !important;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 10px 20px;
-  border-radius: 99px;
-  box-shadow: 0 6px 20px rgba(255, 138, 0, 0.35);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--saffron), #FF5E00); color: #fff !important;
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px;
+  padding: 10px 20px; border-radius: 99px; box-shadow: 0 6px 20px rgba(255, 138, 0, 0.35);
 }
-
-.nav-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(255, 138, 0, 0.5);
-}
-
 .admin-nav-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 138, 0, 0.35);
-  background: rgba(255, 183, 3, 0.14);
-  color: var(--navy);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: 4px;
-  transition: all 0.25s ease;
-  flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid rgba(255, 138, 0, 0.35);
+  background: rgba(255, 183, 3, 0.14); color: var(--navy); display: inline-flex;
+  align-items: center; justify-content: center; cursor: pointer; margin-left: 4px; transition: 0.25s; flex-shrink: 0;
 }
-
-.admin-nav-btn:hover {
-  background: var(--gold);
-  color: var(--navy);
-  transform: scale(1.08);
-  box-shadow: 0 6px 16px rgba(255, 183, 3, 0.4);
-}
-
-.navbar-wrap.scrolled .admin-nav-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--gold);
-  border-color: rgba(255, 183, 3, 0.4);
-}
-
-.navbar-wrap.scrolled .admin-nav-btn:hover {
-  background: var(--gold);
-  color: var(--navy);
-}
-
+.admin-nav-btn:hover { background: var(--gold); color: var(--navy); transform: scale(1.08); }
+.navbar-wrap.scrolled .admin-nav-btn { background: rgba(255, 255, 255, 0.12); color: var(--gold); }
 .menu-toggle {
-  display: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(15, 23, 42, 0.06);
-  color: var(--navy);
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  display: none; width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18); background: var(--navy); color: #fff;
+  align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 18px rgba(11,19,43,0.25);
 }
 
-.navbar-wrap.scrolled .menu-toggle {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
+/* Mobile Drawer */
 .mobile-drawer {
-  position: fixed;
-  top: calc(104px + var(--live-ticker-offset));
-  left: 16px;
-  right: 16px;
-  background: var(--navy);
-  color: #fff;
-  border-radius: 24px;
-  padding: 20px;
-  z-index: 8999;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.12);
-  transform: translateY(-20px) scale(0.95);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed; top: calc(92px + var(--live-ticker-offset)); right: 16px; left: 16px;
+  background: var(--navy); color: #fff; border-radius: 24px; padding: 20px; z-index: 8999;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12);
+  transform: translateY(-20px) scale(0.95); opacity: 0; pointer-events: none; transition: all 0.3s ease;
 }
-
-.mobile-drawer.open {
-  transform: translateY(0) scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-
+.mobile-drawer.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
 .mobile-drawer a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 13px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 14px;
-  color: rgba(255,255,255,0.88);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px; font-size: 16px; font-weight: 600; border-radius: 14px; color: rgba(255,255,255,0.88);
 }
+.mobile-drawer a:hover { background: rgba(255,255,255,0.08); }
 
-.mobile-drawer a:hover {
-  background: rgba(255,255,255,0.08);
-}
-
+/* 📱 MOBILE: HIDE BIG NAVBAR BAR, SHOW ONLY FLOATING HAMBURGER & ADMIN ICON */
 @media (max-width: 880px) {
-  .nav-links a.nav-item { display: none; }
+  .navbar-wrap { padding: 8px 14px; pointer-events: none; }
+  .navbar-inner, .navbar-wrap.scrolled .navbar-inner {
+    background: transparent !important; border: none !important;
+    box-shadow: none !important; backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important; padding: 0; justify-content: flex-end;
+  }
+  .brand-link, .nav-links a.nav-item, .nav-links .nav-cta { display: none !important; }
+  .nav-links { pointer-events: auto; gap: 8px; }
+  .admin-nav-btn { background: var(--navy) !important; color: var(--gold) !important; border: 1px solid rgba(255,183,3,0.4) !important; box-shadow: 0 6px 18px rgba(11,19,43,0.25); }
   .menu-toggle { display: inline-flex; }
 }
 
-/* ═══════════════════════════════════════════════════
-   3. HERO SECTION WITH MASTERPIECE ANIMATED SVG
-═══════════════════════════════════════════════════ */
+/* 3. SCHOOL CAMPUS IMAGE BANNER RIGHT BELOW NAVBAR */
+.school-photo-banner-sec {
+  padding: calc(112px + var(--live-ticker-offset)) 24px 0;
+  max-width: 1200px; margin: 0 auto;
+}
+@media (max-width: 880px) {
+  .school-photo-banner-sec { padding-top: calc(56px + var(--live-ticker-offset)); }
+}
+.school-photo-frame {
+  position: relative; width: 100%; border-radius: 28px; overflow: hidden;
+  box-shadow: var(--shadow-lg); border: 4px solid #ffffff; background: var(--navy);
+}
+.school-photo-frame img {
+  width: 100%; max-height: 480px; object-fit: cover; display: block;
+}
+.school-photo-caption {
+  position: absolute; bottom: 16px; left: 16px; right: 16px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  background: rgba(11, 19, 43, 0.82); backdrop-filter: blur(12px);
+  padding: 12px 20px; border-radius: 18px; color: #fff; border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* 4. HERO SECTION */
 .hero {
-  position: relative;
-  padding: calc(150px + var(--live-ticker-offset)) 24px 90px;
-  overflow: hidden;
-  background: radial-gradient(circle at 85% 20%, rgba(255, 183, 3, 0.16) 0%, transparent 45%),
-              radial-gradient(circle at 10% 80%, rgba(37, 99, 235, 0.10) 0%, transparent 50%),
-              var(--bg-cream);
+  position: relative; padding: 54px 24px 90px; overflow: hidden;
+  background: radial-gradient(circle at 85% 20%, rgba(255, 183, 3, 0.14) 0%, transparent 45%),
+              radial-gradient(circle at 10% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
 }
-
-.hero-bg-mandala {
-  position: absolute;
-  top: 60px;
-  right: -180px;
-  width: 680px;
-  height: 680px;
-  opacity: 0.06;
-  pointer-events: none;
-  animation: spinSlow 60s linear infinite;
-}
-
 .hero-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.08fr 0.92fr;
-  gap: 48px;
-  align-items: center;
-  position: relative;
-  z-index: 2;
+  max-width: 1200px; margin: 0 auto; display: grid;
+  grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; position: relative; z-index: 2;
 }
-
 .hero-pill-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border: 1px solid rgba(255, 138, 0, 0.3);
-  padding: 6px 16px 6px 8px;
-  border-radius: 99px;
-  box-shadow: 0 4px 15px rgba(255, 138, 0, 0.1);
-  margin-bottom: 24px;
+  display: inline-flex; align-items: center; gap: 10px; background: #fff;
+  border: 1px solid rgba(255, 138, 0, 0.3); padding: 6px 16px 6px 8px;
+  border-radius: 99px; box-shadow: 0 4px 15px rgba(255, 138, 0, 0.1); margin-bottom: 22px;
 }
-
 .hero-pill-icon {
-  background: linear-gradient(135deg, var(--saffron), var(--gold));
-  color: var(--navy);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold)); color: var(--navy);
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px;
 }
-
-.hero-pill-text {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--navy);
-}
-
-.hero-title {
-  font-size: clamp(40px, 5.5vw, 68px);
-  font-weight: 800;
-  line-height: 1.06;
-  letter-spacing: -0.03em;
-  color: var(--navy);
-  margin-bottom: 22px;
-}
-
-.hero-highlight {
-  position: relative;
-  display: inline-block;
-  color: var(--royal-blue);
-}
-
-.hero-highlight-svg {
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 100%;
-  height: 14px;
-  pointer-events: none;
-}
-
-.hero-highlight-svg path {
-  stroke-dasharray: 300;
-  stroke-dashoffset: 300;
-  animation: drawStroke 1.4s ease-out 0.3s forwards;
-}
-
-.hero-desc {
-  font-size: 17.5px;
-  color: var(--text-muted);
-  max-width: 540px;
-  margin-bottom: 32px;
-  line-height: 1.7;
-}
-
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 38px;
-}
-
+.hero-pill-text { font-size: 13px; font-weight: 700; color: var(--navy); }
+.hero-title { font-size: clamp(38px, 5.2vw, 64px); font-weight: 800; line-height: 1.06; letter-spacing: -0.03em; color: var(--navy); margin-bottom: 20px; }
+.hero-highlight { position: relative; display: inline-block; color: var(--royal-blue); }
+.hero-highlight-svg { position: absolute; bottom: -6px; left: 0; width: 100%; height: 14px; pointer-events: none; }
+.hero-highlight-svg path { stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawStroke 1.4s ease-out 0.3s forwards; }
+.hero-desc { font-size: 17px; color: var(--text-muted); max-width: 540px; margin-bottom: 30px; line-height: 1.7; }
+.hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 34px; }
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--navy);
-  color: #fff;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 16px 30px;
-  border-radius: 99px;
-  box-shadow: 0 14px 30px -6px rgba(11, 19, 43, 0.35);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
+  display: inline-flex; align-items: center; gap: 10px; background: var(--navy); color: #fff;
+  font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 30px;
+  border-radius: 99px; box-shadow: 0 14px 30px -6px rgba(11, 19, 43, 0.35); transition: 0.3s;
 }
-
-.btn-primary:hover {
-  background: var(--royal-blue);
-  transform: translateY(-3px);
-  box-shadow: 0 18px 36px -6px rgba(37, 99, 235, 0.45);
-}
-
+.btn-primary:hover { background: var(--royal-blue); transform: translateY(-3px); }
 .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  color: var(--navy);
-  border: 1.5px solid rgba(11, 19, 43, 0.12);
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 15px 26px;
-  border-radius: 99px;
-  transition: all 0.25s ease;
+  display: inline-flex; align-items: center; gap: 10px; background: #fff; color: var(--navy);
+  border: 1.5px solid rgba(11, 19, 43, 0.12); font-family: 'Outfit', sans-serif;
+  font-size: 16px; font-weight: 700; padding: 15px 26px; border-radius: 99px; transition: 0.25s;
 }
-
-.btn-secondary:hover {
-  border-color: var(--navy);
-  transform: translateY(-2px);
-  background: var(--bg-warm);
-}
-
-.hero-trust-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding-top: 22px;
-  border-top: 1px dashed rgba(15, 23, 42, 0.14);
-  flex-wrap: wrap;
-}
-
-.trust-avatars {
-  display: flex;
-  align-items: center;
-}
-
+.btn-secondary:hover { border-color: var(--navy); transform: translateY(-2px); background: var(--bg-warm); }
+.hero-trust-row { display: flex; align-items: center; gap: 18px; padding-top: 20px; border-top: 1px dashed rgba(15, 23, 42, 0.14); flex-wrap: wrap; }
+.trust-avatars { display: flex; align-items: center; }
 .trust-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 2.5px solid #fff;
-  margin-left: -10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid #fff; margin-left: -10px;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff;
 }
 .trust-avatar:first-child { margin-left: 0; }
-
-.trust-meta {
-  font-size: 13px;
-  color: var(--text-muted);
+.trust-meta { font-size: 13px; color: var(--text-muted); }
+.hero-card-visual {
+  background: #fff; padding: 14px; border-radius: 28px; box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light); position: relative;
 }
-
-.trust-meta strong {
-  color: var(--navy);
-  font-weight: 700;
-}
-
-.hero-visual {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-svg-scene {
-  width: 100%;
-  max-width: 540px;
-  height: auto;
-  filter: drop-shadow(0 25px 50px rgba(11, 19, 43, 0.12));
-}
-
-.float-slow { animation: floatY 5s ease-in-out infinite; }
-.float-medium { animation: floatY 3.8s ease-in-out infinite 0.6s; }
-.float-fast { animation: floatY 3s ease-in-out infinite 1.2s; }
-.pulse-glow { animation: pulseScale 3s ease-in-out infinite; transform-origin: center; }
-.spin-orbit { animation: spinSlow 24s linear infinite; transform-origin: 280px 260px; }
-
-@keyframes floatY {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-14px); }
-}
-
-@keyframes pulseScale {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.08); opacity: 1; }
-}
-
+.hero-card-visual img { width: 100%; height: 340px; object-fit: cover; border-radius: 20px; display: block; }
 @media (max-width: 960px) {
-  .hero { padding-top: calc(130px + var(--live-ticker-offset)); }
   .hero-container { grid-template-columns: 1fr; text-align: center; }
   .hero-desc { margin-left: auto; margin-right: auto; }
-  .hero-actions { justify-content: center; }
-  .hero-trust-row { justify-content: center; }
+  .hero-actions, .hero-trust-row { justify-content: center; }
 }
 
-/* ═══════════════════════════════════════════════════
-   4. ANIMATED STATS RIBBON
-═══════════════════════════════════════════════════ */
-.stats-section {
-  position: relative;
-  z-index: 3;
-  margin-top: -30px;
-  padding: 0 24px;
-}
-
+/* 5. STATS RIBBON */
+.stats-section { position: relative; z-index: 3; margin-top: -20px; padding: 0 24px; }
 .stats-container {
-  max-width: 1160px;
-  margin: 0 auto;
-  background: var(--navy);
-  border-radius: var(--radius-lg);
-  padding: 36px 32px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 1160px; margin: 0 auto; background: var(--navy); border-radius: var(--radius-lg);
+  padding: 36px 32px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  box-shadow: var(--shadow-lg); border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.stats-container::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(255, 183, 3, 0.15), transparent 60%);
-  pointer-events: none;
-}
-
-.stat-box {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+.stat-box { display: flex; align-items: center; gap: 16px; padding: 12px; border-right: 1px solid rgba(255, 255, 255, 0.1); }
 .stat-box:last-child { border-right: none; }
-
 .stat-svg-wrap {
-  width: 60px;
-  height: 60px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform 0.3s ease, background 0.3s ease;
+  width: 60px; height: 60px; border-radius: 18px; background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
+.stat-number { font-family: 'Outfit', sans-serif; font-size: 34px; font-weight: 800; color: #fff; line-height: 1; }
+.stat-label { font-size: 13px; color: rgba(255, 255, 255, 0.68); margin-top: 4px; font-weight: 500; }
+@media (max-width: 900px) { .stats-container { grid-template-columns: repeat(2, 1fr); padding: 28px 20px; } .stat-box:nth-child(2) { border-right: none; } }
+@media (max-width: 520px) { .stats-container { grid-template-columns: 1fr; } .stat-box { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 18px; } .stat-box:last-child { border-bottom: none; } }
 
-.stat-box:hover .stat-svg-wrap {
-  transform: scale(1.1) rotate(-5deg);
-  background: rgba(255, 183, 3, 0.18);
-}
-
-.stat-number {
-  font-family: 'Outfit', sans-serif;
-  font-size: 34px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1;
-  letter-spacing: -1px;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.68);
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-@media (max-width: 900px) {
-  .stats-container { grid-template-columns: repeat(2, 1fr); padding: 28px 20px; }
-  .stat-box:nth-child(2) { border-right: none; }
-}
-@media (max-width: 520px) {
-  .stats-container { grid-template-columns: 1fr; }
-  .stat-box { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 18px; }
-  .stat-box:last-child { border-bottom: none; padding-bottom: 6px; }
-}
-
-/* ═══════════════════════════════════════════════════
-   5. COMMON SECTION HEADINGS
-═══════════════════════════════════════════════════ */
-.section {
-  padding: 96px 24px;
-  position: relative;
-}
-
-.container {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
+/* 6. COMMON SECTIONS & ABOUT */
+.section { padding: 90px 24px; position: relative; }
+.container { max-width: 1180px; margin: 0 auto; }
 .sec-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--saffron);
-  background: rgba(255, 138, 0, 0.1);
-  padding: 6px 14px;
-  border-radius: 99px;
-  margin-bottom: 14px;
+  display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--saffron);
+  background: rgba(255, 138, 0, 0.1); padding: 6px 14px; border-radius: 99px; margin-bottom: 14px;
 }
-
-.sec-title {
-  font-size: clamp(30px, 4.2vw, 48px);
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.03em;
-  line-height: 1.12;
-  margin-bottom: 14px;
-}
-
-.sec-subtitle {
-  font-size: 16.5px;
-  color: var(--text-muted);
-  max-width: 600px;
-  line-height: 1.65;
-}
-
-/* ═══════════════════════════════════════════════════
-   6. ABOUT SECTION (EDITORIAL + ROTATING GOVT SEAL)
-═══════════════════════════════════════════════════ */
-.about-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 56px;
-  align-items: center;
-  margin-top: 48px;
-}
-
-.about-mosaic {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.mosaic-img-main {
-  grid-column: span 2;
-  border-radius: 26px;
-  overflow: hidden;
-  height: 270px;
-  position: relative;
-  box-shadow: var(--shadow-md);
-}
-
-.mosaic-img-sub {
-  border-radius: 22px;
-  overflow: hidden;
-  height: 210px;
-  box-shadow: var(--shadow-sm);
-}
-
-.about-mosaic img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.about-mosaic div:hover img {
-  transform: scale(1.06);
-}
-
+.sec-title { font-size: clamp(30px, 4.2vw, 48px); font-weight: 800; color: var(--navy); letter-spacing: -0.03em; line-height: 1.12; margin-bottom: 14px; }
+.sec-subtitle { font-size: 16.5px; color: var(--text-muted); max-width: 600px; line-height: 1.65; }
+.about-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: center; margin-top: 48px; }
+.about-mosaic { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mosaic-img-main { grid-column: span 2; border-radius: 26px; overflow: hidden; height: 270px; box-shadow: var(--shadow-md); }
+.mosaic-img-sub { border-radius: 22px; overflow: hidden; height: 210px; box-shadow: var(--shadow-sm); }
+.about-mosaic img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+.about-mosaic div:hover img { transform: scale(1.06); }
 .govt-seal-badge {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -20%);
-  width: 132px;
-  height: 132px;
-  background: var(--navy);
-  border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 14px 35px rgba(11, 19, 43, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -20%);
+  width: 132px; height: 132px; background: var(--navy); border-radius: 50%; border: 4px solid #fff;
+  box-shadow: 0 14px 35px rgba(11, 19, 43, 0.3); display: flex; align-items: center; justify-content: center; z-index: 4;
 }
-
-.govt-seal-svg {
-  width: 118px;
-  height: 118px;
-  animation: spinSlow 20s linear infinite;
-}
-
-.govt-seal-center {
-  position: absolute;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--saffron), var(--gold));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
+.govt-seal-svg { width: 118px; height: 118px; animation: spinSlow 20s linear infinite; }
+.govt-seal-center { position: absolute; width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 .trust-banner-card {
-  background: linear-gradient(135deg, #FFF9EB 0%, #FFF1D0 100%);
-  border: 1px solid rgba(255, 138, 0, 0.25);
-  border-radius: 20px;
-  padding: 18px 22px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 24px;
+  background: linear-gradient(135deg, #FFF9EB 0%, #FFF1D0 100%); border: 1px solid rgba(255, 138, 0, 0.25);
+  border-radius: 20px; padding: 18px 22px; display: flex; align-items: flex-start; gap: 14px; margin-bottom: 24px;
 }
-
-.pillars-list {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
+.pillars-list { display: grid; gap: 12px; }
 .pillar-item {
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 18px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  background: #fff; border: 1px solid var(--border-light); border-radius: 18px;
+  padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm);
 }
+.pillar-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pillar-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; color: var(--navy); }
+.pillar-sub { font-size: 13px; color: var(--text-soft); }
+.pillar-tag { margin-left: auto; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; background: var(--bg-warm); color: var(--navy); }
+@media (max-width: 920px) { .about-grid { grid-template-columns: 1fr; gap: 40px; } }
 
-.pillar-item:hover {
-  transform: translateX(6px);
-  border-color: var(--royal-blue);
-}
-
-.pillar-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.pillar-title {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--navy);
-}
-
-.pillar-sub {
-  font-size: 13px;
-  color: var(--text-soft);
-}
-
-.pillar-tag {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 99px;
-  background: var(--bg-warm);
-  color: var(--navy);
-}
-
-@media (max-width: 920px) {
-  .about-grid { grid-template-columns: 1fr; gap: 40px; }
-}
-
-/* ═══════════════════════════════════════════════════
-   7. FEATURES BENTO GRID
-═══════════════════════════════════════════════════ */
-.features-sec {
-  background: var(--bg-warm);
-  position: relative;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-top: 48px;
-}
-
+/* 7. FEATURES GRID */
+.features-sec { background: var(--bg-warm); }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
 .feat-card {
-  background: #fff;
-  border-radius: 26px;
-  padding: 32px 26px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #fff; border-radius: 26px; padding: 32px 26px; border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: 0.35s;
 }
+.feat-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
+.feat-svg-box { width: 68px; height: 68px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
+.feat-title { font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.feat-desc { font-size: 14.5px; color: var(--text-muted); line-height: 1.65; }
+@media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .features-grid { grid-template-columns: 1fr; } }
 
-.feat-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--card-accent, var(--royal-blue));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s ease;
-}
-
-.feat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-md);
-}
-
-.feat-card:hover::after {
-  transform: scaleX(1);
-}
-
-.feat-svg-box {
-  width: 68px;
-  height: 68px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 22px;
-  transition: transform 0.35s ease;
-}
-
-.feat-card:hover .feat-svg-box {
-  transform: scale(1.08) rotate(-4deg);
-}
-
-.feat-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 10px;
-}
-
-.feat-desc {
-  font-size: 14.5px;
-  color: var(--text-muted);
-  line-height: 1.65;
-}
-
-@media (max-width: 900px) {
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 580px) {
-  .features-grid { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════
-   8. DIRECT CLASSES SECTION (NURSERY TO CLASS 8 - NO BOXES)
-═══════════════════════════════════════════════════ */
-.classes-simple-sec {
-  padding: 80px 24px 40px;
-}
-
+/* 8. DIRECT CLASSES SECTION (NURSERY TO CLASS 8 - NO BOXES) */
+.classes-simple-sec { padding: 80px 24px 40px; }
 .classes-simple-banner {
-  max-width: 1180px;
-  margin: 0 auto;
-  background: #ffffff;
-  border: 1.5px solid rgba(15, 23, 42, 0.08);
-  border-radius: 32px;
-  padding: 48px 44px;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
+  max-width: 1180px; margin: 0 auto; background: #ffffff; border: 1.5px solid rgba(15, 23, 42, 0.08);
+  border-radius: 32px; padding: 48px 44px; box-shadow: var(--shadow-md);
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
 }
+@media (max-width: 768px) { .classes-simple-banner { padding: 34px 24px; text-align: center; justify-content: center; } }
 
-@media (max-width: 768px) {
-  .classes-simple-banner {
-    padding: 34px 24px;
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-/* ═══════════════════════════════════════════════════
-   9. EXAMINATION RESULTS SECTION (REDIRECTS TO NEW TAB)
-═══════════════════════════════════════════════════ */
-.result-portal-sec {
-  padding: 40px 24px 96px;
-}
-
+/* 9. EXAMINATION RESULTS SECTION (NEW TAB REDIRECT) */
+.result-portal-sec { padding: 40px 24px 90px; }
 .result-portal-card {
-  max-width: 1180px;
-  margin: 0 auto;
-  background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
-  border-radius: 32px;
-  padding: 52px 48px;
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 25px 60px -15px rgba(11, 19, 43, 0.35);
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 40px;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  max-width: 1180px; margin: 0 auto; background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
+  border-radius: 32px; padding: 52px 48px; color: #fff; position: relative; overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(11, 19, 43, 0.35); display: grid; grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px; align-items: center; border: 1px solid rgba(255, 255, 255, 0.14);
 }
-
-.result-portal-card::before {
-  content: '';
-  position: absolute;
-  top: -120px;
-  right: -120px;
-  width: 380px;
-  height: 380px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 183, 3, 0.25) 0%, transparent 70%);
-  pointer-events: none;
-}
-
 .result-live-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 183, 3, 0.18);
-  border: 1px solid rgba(255, 183, 3, 0.4);
-  color: var(--gold);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  padding: 6px 14px;
-  border-radius: 99px;
-  margin-bottom: 18px;
+  display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 183, 3, 0.18);
+  border: 1px solid rgba(255, 183, 3, 0.4); color: var(--gold); font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1.2px; padding: 6px 14px; border-radius: 99px; margin-bottom: 18px;
 }
-
-.result-portal-title {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 14px;
-  color: #fff;
-}
-
-.result-portal-desc {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 560px;
-  line-height: 1.7;
-  margin-bottom: 28px;
-}
-
-.result-portal-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
+.result-portal-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; color: #fff; }
+.result-portal-desc { font-size: 16px; color: rgba(255, 255, 255, 0.8); max-width: 560px; line-height: 1.7; margin-bottom: 28px; }
 .btn-result-newtab {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, var(--saffron), var(--gold));
-  color: var(--navy);
-  font-family: 'Outfit', sans-serif;
-  font-size: 16.5px;
-  font-weight: 800;
-  padding: 16px 32px;
-  border-radius: 99px;
-  box-shadow: 0 12px 30px rgba(255, 138, 0, 0.4);
-  transition: all 0.3s ease;
+  display: inline-flex; align-items: center; gap: 12px; background: linear-gradient(135deg, var(--saffron), var(--gold));
+  color: var(--navy); font-family: 'Outfit', sans-serif; font-size: 16.5px; font-weight: 800;
+  padding: 16px 32px; border-radius: 99px; box-shadow: 0 12px 30px rgba(255, 138, 0, 0.4); transition: 0.3s;
 }
-
-.btn-result-newtab:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 36px rgba(255, 183, 3, 0.55);
-}
-
+.btn-result-newtab:hover { transform: translateY(-3px); }
 .result-visual-box {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 24px;
-  padding: 26px;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 24px; padding: 26px; text-align: center;
 }
-
 .result-status-Dynamic {
-  margin-top: 14px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: rgba(11, 19, 43, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.9);
+  margin-top: 14px; padding: 12px 16px; border-radius: 14px; background: rgba(11, 19, 43, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1); font-size: 13.5px; color: rgba(255, 255, 255, 0.9);
 }
+@media (max-width: 900px) { .result-portal-card { grid-template-columns: 1fr; padding: 36px 26px; text-align: center; } .result-portal-desc { margin: 0 auto 24px; } }
 
-@media (max-width: 900px) {
-  .result-portal-card {
-    grid-template-columns: 1fr;
-    padding: 36px 26px;
-    text-align: center;
-  }
-  .result-portal-desc { margin-left: auto; margin-right: auto; }
-  .result-portal-actions { justify-content: center; }
-}
-
-/* ═══════════════════════════════════════════════════
-   10. TESTIMONIAL SHOWCASE
-═══════════════════════════════════════════════════ */
-.testimonial-sec {
-  background: var(--navy);
-  color: #fff;
-  padding: 90px 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.test-wrap {
-  max-width: 820px;
-  margin: 0 auto;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-
-.test-quote-svg {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 20px;
-}
-
-.test-stars {
-  display: inline-flex;
-  gap: 6px;
-  background: rgba(255, 183, 3, 0.14);
-  border: 1px solid rgba(255, 183, 3, 0.3);
-  padding: 6px 18px;
-  border-radius: 99px;
-  color: var(--gold);
-  font-size: 16px;
-  margin-bottom: 24px;
-}
-
-.test-quote-text {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-size: clamp(20px, 3vw, 28px);
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.94);
-  margin-bottom: 30px;
-}
-
-.test-parent-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 10px 22px 10px 10px;
-  border-radius: 99px;
-}
-
-.test-parent-avatar {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--saffron), var(--rose));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-}
-
-/* ═══════════════════════════════════════════════════
-   11. CONTACT & WHATSAPP ADMISSION PORTAL
-═══════════════════════════════════════════════════ */
-.contact-grid {
-  display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
-  gap: 36px;
-  margin-top: 44px;
-  align-items: start;
-}
-
-.contact-info-stack {
-  display: grid;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.c-card {
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 20px;
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--shadow-sm);
-}
-
-.c-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.c-label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-soft);
-}
-
-.c-val {
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--navy);
-}
-
-.map-box {
-  background: #fff;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
-}
-
-.map-caption {
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fff;
-}
-
-.enquiry-card {
-  background: #fff;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-.enquiry-header {
-  background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
-  padding: 28px 30px;
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-}
-
-.enquiry-header-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.wa-badge-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  background: #25D366;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
-  flex-shrink: 0;
-}
-
-.enquiry-body {
-  padding: 28px 30px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-muted);
-  margin-bottom: 7px;
-}
-
-.form-control {
-  width: 100%;
-  background: var(--bg-cream);
-  border: 1.5px solid rgba(15, 23, 42, 0.12);
-  border-radius: 14px;
-  padding: 13px 16px;
-  font-family: inherit;
-  font-size: 15px;
-  color: var(--navy);
-  font-weight: 500;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.form-control:focus {
-  background: #fff;
-  border-color: var(--royal-blue);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
+/* 10. TESTIMONIAL & CONTACT */
+.testimonial-sec { background: var(--navy); color: #fff; padding: 90px 24px; text-align: center; }
+.test-wrap { max-width: 820px; margin: 0 auto; }
+.test-stars { display: inline-flex; gap: 6px; background: rgba(255, 183, 3, 0.14); border: 1px solid rgba(255, 183, 3, 0.3); padding: 6px 18px; border-radius: 99px; color: var(--gold); font-size: 16px; margin-bottom: 24px; }
+.test-quote-text { font-family: 'Fraunces', serif; font-style: italic; font-size: clamp(20px, 3vw, 28px); line-height: 1.55; color: rgba(255, 255, 255, 0.94); margin-bottom: 30px; }
+.test-parent-pill { display: inline-flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14); padding: 10px 22px 10px 10px; border-radius: 99px; }
+.test-parent-avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--rose)); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.contact-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 36px; margin-top: 44px; align-items: start; }
+.contact-info-stack { display: grid; gap: 14px; margin-bottom: 20px; }
+.c-card { background: #fff; border: 1px solid var(--border-light); border-radius: 20px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); }
+.c-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.c-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-soft); }
+.c-val { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--navy); }
+.map-box { background: #fff; border-radius: 24px; overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+.map-caption { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; background: #fff; }
+.enquiry-card { background: #fff; border-radius: 28px; overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid rgba(15, 23, 42, 0.08); }
+.enquiry-header { background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%); padding: 28px 30px; color: #fff; }
+.enquiry-header-top { display: flex; align-items: center; gap: 16px; }
+.wa-badge-icon { width: 54px; height: 54px; border-radius: 16px; background: #25D366; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.enquiry-body { padding: 28px 30px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+.form-control { width: 100%; background: var(--bg-cream); border: 1.5px solid rgba(15, 23, 42, 0.12); border-radius: 14px; padding: 13px 16px; font-family: inherit; font-size: 15px; color: var(--navy); font-weight: 500; outline: none; }
+.form-control:focus { background: #fff; border-color: var(--royal-blue); }
 .submit-wa-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  padding: 16px 24px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16.5px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.35);
-  transition: all 0.25s ease;
+  width: 100%; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #fff;
+  border: none; border-radius: 16px; padding: 16px 24px; font-family: 'Outfit', sans-serif;
+  font-size: 16.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
 }
+@media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } .enquiry-body, .enquiry-header { padding: 22px 20px; } }
 
-.submit-wa-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.45);
-}
+/* 11. FOOTER & MODALS */
+.site-footer { background: #070C1C; color: #fff; padding: 72px 24px 32px; }
+.footer-grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr 1.2fr; gap: 44px; padding-bottom: 44px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.footer-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.footer-brand img { width: 44px; height: 44px; border-radius: 12px; background: #fff; padding: 3px; }
+.footer-desc { font-size: 14px; color: rgba(255,255,255,0.55); max-width: 340px; line-height: 1.7; margin-bottom: 20px; }
+.footer-socials { display: flex; gap: 10px; }
+.soc-btn { width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.7); }
+.footer-col h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gold); margin-bottom: 16px; }
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: 10px; }
+.footer-col ul a { font-size: 14px; color: rgba(255,255,255,0.6); }
+.footer-bottom { max-width: 1180px; margin: 0 auto; padding-top: 26px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 13px; color: rgba(255,255,255,0.4); }
+@media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
 
-@media (max-width: 900px) {
-  .contact-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 520px) {
-  .form-row { grid-template-columns: 1fr; }
-  .enquiry-body, .enquiry-header { padding: 22px 20px; }
-}
-
-/* ═══════════════════════════════════════════════════
-   12. FOOTER
-═══════════════════════════════════════════════════ */
-.site-footer {
-  background: #070C1C;
-  color: #fff;
-  padding: 72px 24px 32px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-.footer-grid {
-  max-width: 1180px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 1.2fr;
-  gap: 44px;
-  padding-bottom: 44px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.footer-brand img {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #fff;
-  padding: 3px;
-}
-
-.footer-desc {
-  font-size: 14px;
-  color: rgba(255,255,255,0.55);
-  max-width: 340px;
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.footer-socials {
-  display: flex;
-  gap: 10px;
-}
-
-.soc-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.7);
-  transition: all 0.2s ease;
-}
-
-.soc-btn:hover {
-  background: var(--saffron);
-  color: var(--navy);
-  border-color: var(--saffron);
-  transform: translateY(-2px);
-}
-
-.footer-col h4 {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: var(--gold);
-  margin-bottom: 16px;
-}
-
-.footer-col ul {
-  list-style: none;
-}
-
-.footer-col ul li {
-  margin-bottom: 10px;
-}
-
-.footer-col ul a {
-  font-size: 14px;
-  color: rgba(255,255,255,0.6);
-  transition: color 0.2s ease;
-}
-
-.footer-col ul a:hover {
-  color: #fff;
-}
-
-.footer-bottom {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding-top: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.4);
-}
-
-@media (max-width: 760px) {
-  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
-}
-
-/* ═══════════════════════════════════════════════════
-   13. FLOATING WA BUTTON, BACK TO TOP, WA MODAL & ADMIN MODAL
-═══════════════════════════════════════════════════ */
-.wa-floating {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 950;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #25D366;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45);
-  transition: transform 0.25s ease;
-}
-
-.wa-floating::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px solid #25D366;
-  opacity: 0;
-  animation: waPulseRing 2.2s infinite;
-}
-
-@keyframes waPulseRing {
-  0% { transform: scale(0.85); opacity: 0.7; }
-  100% { transform: scale(1.3); opacity: 0; }
-}
-
-.wa-floating:hover {
-  transform: scale(1.08);
-}
-
-#backTopBtn {
-  position: fixed;
-  bottom: 94px;
-  right: 30px;
-  z-index: 949;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--navy);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.15);
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-
+.wa-floating { position: fixed; bottom: 24px; right: 24px; z-index: 950; width: 58px; height: 58px; border-radius: 50%; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45); }
+#backTopBtn { position: fixed; bottom: 94px; right: 30px; z-index: 949; width: 44px; height: 44px; border-radius: 50%; background: var(--navy); color: #fff; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; display: none; align-items: center; justify-content: center; }
 #backTopBtn.show { display: flex; }
 
-#waModal {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(7, 12, 28, 0.65);
-  backdrop-filter: blur(10px);
-}
-
+#waModal { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(7, 12, 28, 0.65); backdrop-filter: blur(10px); }
 #waModal.hidden { display: none; }
-
-.wa-sheet {
-  background: #fff;
-  border-radius: 26px;
-  width: 100%;
-  max-width: 460px;
-  overflow: hidden;
-  box-shadow: 0 25px 70px rgba(0,0,0,0.3);
-  position: relative;
-  z-index: 2;
-}
-
-.wa-hdr {
-  background: linear-gradient(135deg, #25D366, #128C7E);
-  padding: 20px 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #fff;
-}
-
-.wa-body {
-  padding: 20px 24px 24px;
-}
-
-.wa-pre {
-  background: var(--bg-cream);
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
-  padding: 12px 14px;
-  font-size: 12.5px;
-  color: var(--text-muted);
-  line-height: 1.65;
-  margin-bottom: 16px;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: inherit;
-}
-
-.wa-btns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.wa-btn {
-  padding: 12px;
-  border-radius: 12px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  border: none;
-}
-
+.wa-sheet { background: #fff; border-radius: 26px; width: 100%; max-width: 460px; overflow: hidden; position: relative; z-index: 2; }
+.wa-hdr { background: linear-gradient(135deg, #25D366, #128C7E); padding: 20px 24px; display: flex; align-items: center; gap: 14px; color: #fff; }
+.wa-body { padding: 20px 24px 24px; }
+.wa-pre { background: var(--bg-cream); border: 1px solid var(--border-light); border-radius: 14px; padding: 12px 14px; font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; max-height: 120px; overflow-y: auto; white-space: pre-wrap; }
+.wa-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.wa-btn { padding: 12px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
 .wa-app { background: #25D366; color: #fff; }
 .wa-web { background: var(--royal-blue); color: #fff; }
 .wa-copy { background: var(--bg-warm); color: var(--navy); grid-column: span 2; }
-.wa-cancel {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  color: var(--text-muted);
-  font-weight: 700;
-  cursor: pointer;
-}
+.wa-cancel { width: 100%; padding: 12px; border-radius: 12px; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); font-weight: 700; cursor: pointer; }
 
-/* 🔐 ADMIN EXAM CONTROL MODAL */
-#adminModal {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(7, 12, 28, 0.72);
-  backdrop-filter: blur(10px);
-}
-
-#adminModal.open {
-  display: flex;
-}
-
-.admin-sheet {
-  background: #fff;
-  border-radius: 26px;
-  width: 100%;
-  max-width: 720px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 70px rgba(0,0,0,0.35);
-  position: relative;
-  z-index: 2;
-}
-
-.admin-hdr {
-  background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
-  padding: 22px 26px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.admin-close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-body {
-  padding: 24px 26px 28px;
-}
-
-.admin-btn-submit {
-  width: 100%;
-  background: linear-gradient(135deg, var(--navy), var(--royal-blue));
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 14px 22px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 15.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.25s;
-}
-
-.admin-btn-submit:hover {
-  background: linear-gradient(135deg, var(--saffron), #FF5E00);
-}
-
-.admin-table-wrap {
-  margin-top: 24px;
-  border-top: 1px solid var(--border-light);
-  padding-top: 20px;
-  overflow-x: auto;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13.5px;
-}
-
-.admin-table th, .admin-table td {
-  padding: 11px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.admin-table th {
-  background: var(--bg-warm);
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.btn-live-toggle {
-  padding: 7px 13px;
-  border-radius: 99px;
-  border: none;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-go-live {
-  background: #DCFCE7;
-  color: #15803D;
-}
-
-.btn-go-live:hover {
-  background: #16A34A;
-  color: #fff;
-}
-
-.btn-stop-live {
-  background: #FEE2E2;
-  color: #B91C1C;
-}
-
-.btn-stop-live:hover {
-  background: #DC2626;
-  color: #fff;
-}
-
-.btn-del-exam {
-  background: #F1F5F9;
-  color: #EF4444;
-  border: none;
-  padding: 7px 11px;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-left: 6px;
-  font-weight: 700;
-}
+/* 🔐 ADMIN MODAL */
+#adminModal { position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(7, 12, 28, 0.72); backdrop-filter: blur(10px); }
+#adminModal.open { display: flex; }
+.admin-sheet { background: #fff; border-radius: 26px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; position: relative; z-index: 2; }
+.admin-hdr { background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%); padding: 22px 26px; display: flex; align-items: center; justify-content: space-between; color: #fff; position: sticky; top: 0; z-index: 5; }
+.admin-close-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-size: 18px; cursor: pointer; }
+.admin-body { padding: 24px 26px 28px; }
+.admin-btn-submit { width: 100%; background: linear-gradient(135deg, var(--navy), var(--royal-blue)); color: #fff; border: none; border-radius: 14px; padding: 14px 22px; font-family: 'Outfit', sans-serif; font-size: 15.5px; font-weight: 700; cursor: pointer; }
+.admin-table-wrap { margin-top: 24px; border-top: 1px solid var(--border-light); padding-top: 20px; overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.admin-table th, .admin-table td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--border-light); }
+.admin-table th { background: var(--bg-warm); font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--navy); font-size: 12px; text-transform: uppercase; }
+.btn-live-toggle { padding: 7px 13px; border-radius: 99px; border: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
+.btn-go-live { background: #DCFCE7; color: #15803D; }
+.btn-stop-live { background: #FEE2E2; color: #B91C1C; }
+.btn-del-exam { background: #F1F5F9; color: #EF4444; border: none; padding: 7px 11px; border-radius: 10px; cursor: pointer; margin-left: 6px; font-weight: 700; }
 </style>
 </head>
 
 <body class="bg-grid-pattern">
 
-<!-- ═══════════════════════════════════════════════════
-     1. TOP MARQUEE ANNOUNCEMENT STRIP
-═══════════════════════════════════════════════════ -->
+<!-- Reusable WhatsApp SVG Symbol -->
+<svg style="display:none;">
+  <symbol id="wa-icon" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </symbol>
+</svg>
+
+<!-- 1. TOP MARQUEE ANNOUNCEMENT STRIP -->
 <div class="top-ticker">
   <div class="ticker-track">
     <div class="ticker-item">
@@ -1936,7 +462,6 @@ a {
       <span class="ticker-dot">✦</span>
       <span style="color:var(--gold);font-weight:700;">Admissions Open: Nursery to Class 8</span>
     </div>
-    <!-- Duplicate for seamless loop -->
     <div class="ticker-item">
       <span class="ticker-badge">🏆 #1 School</span>
       <span>#1 in Harsidhi, East Champaran</span>
@@ -1950,18 +475,15 @@ a {
   </div>
 </div>
 
-<!-- 🔴 DYNAMIC LIVE RESULT TICKER (STATIC LEFT & RIGHT, SCROLLING MIDDLE AT SAME SPEED) -->
+<!-- 🔴 DYNAMIC LIVE RESULT TICKER (STATIC LEFT & RIGHT, SCROLLING MIDDLE AT 32s SPEED) -->
 <div id="live-result-ticker">
   <a id="live-result-ticker-link" href="https://ca-school.github.io/result/" target="_blank" rel="noopener">
-    <!-- Static Curved Box at Start -->
     <div class="live-static-left">
       <span class="live-pulse-pill">
         <span class="live-pulse-dot"></span>
         LIVE RESULT
       </span>
     </div>
-
-    <!-- Scrolling Announcement Text in Middle (32s speed) -->
     <div class="live-ticker-viewport">
       <div class="live-ticker-track">
         <div class="live-ticker-item" id="live-ticker-msg-1">
@@ -1972,17 +494,13 @@ a {
         </div>
       </div>
     </div>
-
-    <!-- Static Curved Box at End -->
     <div class="live-static-right">
       <span class="live-ticker-cta">Check Result Now ↗</span>
     </div>
   </a>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     2. SMART FLOATING NAVBAR (WITH RESULTS & ADMIN ICON)
-═══════════════════════════════════════════════════ -->
+<!-- 2. SMART NAVBAR (DESKTOP PILL / MOBILE HAMBURGER ONLY) -->
 <header class="navbar-wrap" id="navbarWrap">
   <div class="navbar-inner">
     <a href="#home" class="brand-link">
@@ -2003,14 +521,10 @@ a {
       <a href="#contact" class="nav-item">Location</a>
       <a href="#admission-enquiry" class="nav-cta">
         <span>Enroll Child</span>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
-      <!-- 🔐 Admin Icon Button -->
       <button class="admin-nav-btn" id="openAdminBtn" title="Admin Result Control Panel" aria-label="Admin Result Control Panel">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <circle cx="12" cy="11" r="3"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
       </button>
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
@@ -2031,17 +545,25 @@ a {
   <a href="#admission-enquiry" class="m-link" style="background:var(--saffron);color:var(--navy);font-weight:800;margin-top:8px;justify-content:center;">🎓 Apply for Admission</a>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     3. HERO SECTION WITH MASTERPIECE ANIMATED SVG
-═══════════════════════════════════════════════════ -->
-<section class="hero" id="home">
-  <svg class="hero-bg-mandala" viewBox="0 0 500 500" fill="none">
-    <circle cx="250" cy="250" r="240" stroke="#0B132B" stroke-width="2" stroke-dasharray="12 12"/>
-    <circle cx="250" cy="250" r="190" stroke="#0B132B" stroke-width="1.5"/>
-    <circle cx="250" cy="250" r="140" stroke="#0B132B" stroke-width="1.5" stroke-dasharray="6 6"/>
-    <path d="M250 10 L250 490 M10 250 L490 250 M80 80 L420 420 M420 80 L80 420" stroke="#0B132B" stroke-width="1"/>
-  </svg>
+<!-- 3. SCHOOL IMAGE BANNER RIGHT BELOW NAVBAR -->
+<div class="school-photo-banner-sec" id="home">
+  <div class="school-photo-frame">
+    <img src="https://ca-school.github.io/chanakyaacademyranjita/1794309997153.png" alt="Chanakya Academy Campus, Ranjita, East Champaran">
+    <div class="school-photo-caption">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">🏫</span>
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:15px;">Chanakya Academy, Ranjita</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Harsidhi, East Champaran • Nursery to Class 8 (CBSE Pattern)</div>
+        </div>
+      </div>
+      <a href="#admission-enquiry" style="background:var(--gold);color:var(--navy);font-family:'Outfit',sans-serif;font-weight:800;font-size:12.5px;padding:7px 16px;border-radius:99px;">Admissions Open →</a>
+    </div>
+  </div>
+</div>
 
+<!-- 4. HERO SECTION -->
+<section class="hero">
   <div class="hero-container">
     <div>
       <div class="hero-pill-badge">
@@ -2066,12 +588,10 @@ a {
 
       <div class="hero-actions">
         <a href="#admission-enquiry" class="btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-          Enroll Your Child
+          <span>🎓 Enroll Your Child</span>
         </a>
         <a href="results.html" target="_blank" class="btn-secondary" style="border-color:rgba(255,138,0,0.4);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF8A00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Exam Results ↗
+          <span>📊 Exam Results ↗</span>
         </a>
       </div>
 
@@ -2088,171 +608,38 @@ a {
       </div>
     </div>
 
-    <div class="hero-visual">
-      <svg class="hero-svg-scene" viewBox="0 0 560 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="skyAura" x1="80" y1="40" x2="480" y2="460" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#EFF6FF"/>
-            <stop offset="50%" stop-color="#FEF3C7"/>
-            <stop offset="100%" stop-color="#DBEAFE"/>
-          </linearGradient>
-          <linearGradient id="navyCard" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#0B132B"/>
-            <stop offset="100%" stop-color="#1E3A8A"/>
-          </linearGradient>
-          <linearGradient id="goldSun" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#FFD166"/>
-            <stop offset="100%" stop-color="#FF8A00"/>
-          </linearGradient>
-          <filter id="softDrop" x="-15%" y="-15%" width="130%" height="130%">
-            <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0B132B" flood-opacity="0.14"/>
-          </filter>
-        </defs>
-
-        <circle cx="280" cy="255" r="205" fill="url(#skyAura)" />
-        <circle cx="280" cy="255" r="205" stroke="#FF8A00" stroke-opacity="0.2" stroke-width="2" stroke-dasharray="10 10" class="spin-orbit"/>
-
-        <path id="planeFlightPath" d="M 75,260 C 75,110 485,110 485,260 C 485,400 75,400 75,260 Z" stroke="#2563EB" stroke-opacity="0.22" stroke-width="2" stroke-dasharray="7 7" fill="none"/>
-
-        <g class="pulse-glow">
-          <circle cx="280" cy="175" r="56" fill="url(#goldSun)" opacity="0.25"/>
-          <circle cx="280" cy="175" r="38" fill="url(#goldSun)"/>
-          <path d="M280 156 L254 168 L280 180 L306 168 Z" fill="#0B132B"/>
-          <path d="M264 174 V186 C264 190 296 190 296 186 V174" stroke="#0B132B" stroke-width="3" fill="none"/>
-          <line x1="303" y1="169" x2="303" y2="185" stroke="#0B132B" stroke-width="2.5"/>
-        </g>
-
-        <g class="float-slow" filter="url(#softDrop)">
-          <rect x="130" y="215" width="300" height="170" rx="28" fill="url(#navyCard)"/>
-          <rect x="142" y="227" width="276" height="146" rx="20" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
-          <rect x="215" y="255" width="130" height="75" rx="8" fill="#FFFFFF" fill-opacity="0.1"/>
-          <polygon points="280,230 205,258 355,258" fill="#FFB703"/>
-          <circle cx="280" cy="247" r="7" fill="#0B132B"/>
-          <rect x="230" y="270" width="18" height="22" rx="4" fill="#FFD166"/>
-          <rect x="256" y="270" width="18" height="22" rx="4" fill="#FFD166"/>
-          <rect x="286" y="270" width="18" height="22" rx="4" fill="#FFD166"/>
-          <rect x="312" y="270" width="18" height="22" rx="4" fill="#FFD166"/>
-          <path d="M280 345 C245 330, 195 332, 165 342 L165 312 C195 302, 245 300, 280 315 Z" fill="#FFFFFF"/>
-          <path d="M280 345 C315 330, 365 332, 395 342 L395 312 C365 302, 315 300, 280 315 Z" fill="#F1F5F9"/>
-          <path d="M165 342 C195 332, 245 330, 280 345 C315 330, 365 332, 395 342" stroke="#FF8A00" stroke-width="5" stroke-linecap="round"/>
-          <rect x="200" y="356" width="160" height="20" rx="10" fill="#10B981"/>
-          <text x="280" y="370" text-anchor="middle" fill="#FFFFFF" font-family="Outfit, sans-serif" font-size="11" font-weight="800" letter-spacing="1">CBSE • NURSERY TO 8</text>
-        </g>
-
-        <g class="float-medium" filter="url(#softDrop)">
-          <rect x="52" y="105" width="128" height="64" rx="18" fill="#FFFFFF"/>
-          <circle cx="84" cy="137" r="20" fill="rgba(14, 165, 233, 0.12)"/>
-          <g transform="translate(84,137)">
-            <ellipse rx="13" ry="5" stroke="#0EA5E9" stroke-width="2" transform="rotate(30)">
-              <animateTransform attributeName="transform" type="rotate" from="30" to="390" dur="6s" repeatCount="indefinite"/>
-            </ellipse>
-            <ellipse rx="13" ry="5" stroke="#2563EB" stroke-width="2" transform="rotate(-30)">
-              <animateTransform attributeName="transform" type="rotate" from="-30" to="330" dur="6s" repeatCount="indefinite"/>
-            </ellipse>
-            <circle r="3" fill="#FF8A00"/>
-          </g>
-          <text x="112" y="134" fill="#0B132B" font-family="Outfit, sans-serif" font-size="14" font-weight="800">Smart</text>
-          <text x="112" y="150" fill="#64748B" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="600">Learning</text>
-        </g>
-
-        <g class="float-fast" filter="url(#softDrop)">
-          <rect x="382" y="95" width="136" height="64" rx="18" fill="#FFFFFF"/>
-          <circle cx="414" cy="127" r="20" fill="rgba(255, 138, 0, 0.14)"/>
-          <path d="M407 120 H421 V126 C421 130 418 133 414 133 C410 133 407 130 407 126 Z" fill="#FF8A00"/>
-          <path d="M411 136 H417 M414 133 V136" stroke="#FF8A00" stroke-width="2.2" stroke-linecap="round"/>
-          <text x="442" y="125" fill="#0B132B" font-family="Outfit, sans-serif" font-size="15" font-weight="800">100%</text>
-          <text x="442" y="141" fill="#10B981" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700">Success Rate</text>
-        </g>
-
-        <g class="float-fast" filter="url(#softDrop)">
-          <rect x="44" y="340" width="142" height="62" rx="18" fill="#FFFFFF"/>
-          <circle cx="75" cy="371" r="19" fill="rgba(124, 58, 237, 0.12)"/>
-          <text x="75" y="377" text-anchor="middle" font-size="18">🎨</text>
-          <text x="102" y="368" fill="#0B132B" font-family="Outfit, sans-serif" font-size="13.5" font-weight="800">Holistic</text>
-          <text x="102" y="384" fill="#64748B" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="600">Arts &amp; Values</text>
-        </g>
-
-        <g class="float-medium" filter="url(#softDrop)">
-          <rect x="376" y="348" width="144" height="62" rx="18" fill="#FFFFFF"/>
-          <circle cx="408" cy="379" r="19" fill="rgba(16, 185, 129, 0.14)"/>
-          <text x="408" y="385" text-anchor="middle" font-size="17">👩‍🏫</text>
-          <text x="435" y="376" fill="#0B132B" font-family="Outfit, sans-serif" font-size="14" font-weight="800">25+ Faculty</text>
-          <text x="435" y="392" fill="#64748B" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="600">Caring Mentors</text>
-        </g>
-
-        <g>
-          <polygon points="-14,-8 14,0 -14,8 -8,0" fill="#FF8A00" stroke="#FFFFFF" stroke-width="1.5"/>
-          <animateMotion dur="14s" repeatCount="indefinite" rotate="auto">
-            <mpath href="#planeFlightPath"/>
-          </animateMotion>
-        </g>
-
-        <path d="M190 95 L193 103 L201 106 L193 109 L190 117 L187 109 L179 106 L187 103 Z" fill="#FFB703" class="pulse-glow"/>
-        <path d="M365 180 L367 186 L373 188 L367 190 L365 196 L363 190 L357 188 L363 186 Z" fill="#2563EB" class="pulse-glow"/>
-        <circle cx="135" cy="240" r="5" fill="#F43F5E" class="pulse-glow"/>
-        <circle cx="445" cy="260" r="6" fill="#10B981" class="pulse-glow"/>
-      </svg>
+    <div class="hero-card-visual">
+      <img src="https://ca-school.github.io/chanakyaacademyranjita/1794309997153.png" alt="Chanakya Academy School Building">
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     4. ANIMATED STATS RIBBON
-═══════════════════════════════════════════════════ -->
+<!-- 5. ANIMATED STATS RIBBON -->
 <div class="stats-section">
   <div class="stats-container">
     <div class="stat-box">
-      <div class="stat-svg-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-      </div>
+      <div class="stat-svg-wrap"><span style="font-size:26px;">🎓</span></div>
       <div>
         <div class="stat-number" data-count="500" data-suffix="+">500+</div>
         <div class="stat-label">Happy Students</div>
       </div>
     </div>
-
     <div class="stat-box">
-      <div class="stat-svg-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
+      <div class="stat-svg-wrap"><span style="font-size:26px;">👩‍🏫</span></div>
       <div>
         <div class="stat-number" data-count="25" data-suffix="+">25+</div>
         <div class="stat-label">Expert Teachers</div>
       </div>
     </div>
-
     <div class="stat-box">
-      <div class="stat-svg-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
-      </div>
+      <div class="stat-svg-wrap"><span style="font-size:26px;">📚</span></div>
       <div>
         <div class="stat-number" data-count="11" data-suffix="">11</div>
         <div class="stat-label">Class Levels (N to 8)</div>
       </div>
     </div>
-
     <div class="stat-box">
-      <div class="stat-svg-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-          <path d="M4 22h16"/>
-          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-        </svg>
-      </div>
+      <div class="stat-svg-wrap"><span style="font-size:26px;">🏆</span></div>
       <div>
         <div class="stat-number" data-count="100" data-suffix="%">100%</div>
         <div class="stat-label">Annual Success Rate</div>
@@ -2261,9 +648,7 @@ a {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     5. ABOUT SECTION WITH ROTATING GOVT. SEAL SVG
-═══════════════════════════════════════════════════ -->
+<!-- 6. ABOUT SECTION -->
 <section id="about" class="section">
   <div class="container">
     <div class="sec-badge">✦ About Our Institution</div>
@@ -2275,7 +660,7 @@ a {
     <div class="about-grid">
       <div class="about-mosaic">
         <div class="mosaic-img-main">
-          <img loading="lazy" src="https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=900&auto=format&fit=crop" alt="Chanakya Academy Students">
+          <img loading="lazy" src="https://ca-school.github.io/chanakyaacademyranjita/1794309997153.png" alt="Chanakya Academy Campus">
         </div>
         <div class="mosaic-img-sub">
           <img loading="lazy" src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=700&auto=format&fit=crop" alt="Classroom Teaching">
@@ -2286,9 +671,7 @@ a {
 
         <div class="govt-seal-badge" title="Registered by Education Dept., Govt. of Bihar">
           <svg class="govt-seal-svg" viewBox="0 0 120 120">
-            <defs>
-              <path id="sealCirclePath" d="M 60, 60 m -44, 0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0"/>
-            </defs>
+            <defs><path id="sealCirclePath" d="M 60, 60 m -44, 0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0"/></defs>
             <text fill="#FFB703" font-size="9.3" font-weight="800" letter-spacing="1.7">
               <textPath href="#sealCirclePath">★ GOVT. OF BIHAR REGISTERED ★ CHANAKYA</textPath>
             </text>
@@ -2320,7 +703,6 @@ a {
             </div>
             <span class="pillar-tag">Nursery – Class 8</span>
           </div>
-
           <div class="pillar-item">
             <div class="pillar-icon" style="background:rgba(16,185,129,0.1);color:var(--emerald);">👩‍🏫</div>
             <div>
@@ -2329,7 +711,6 @@ a {
             </div>
             <span class="pillar-tag">25+ Teachers</span>
           </div>
-
           <div class="pillar-item">
             <div class="pillar-icon" style="background:rgba(255,138,0,0.12);color:var(--saffron);">🏆</div>
             <div>
@@ -2338,7 +719,6 @@ a {
             </div>
             <span class="pillar-tag">Every Year</span>
           </div>
-
           <div class="pillar-item">
             <div class="pillar-icon" style="background:rgba(244,63,94,0.1);color:var(--rose);">❤️</div>
             <div>
@@ -2353,9 +733,7 @@ a {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     6. FEATURES SECTION
-═══════════════════════════════════════════════════ -->
+<!-- 7. FEATURES SECTION -->
 <section id="features" class="section features-sec">
   <div class="container">
     <div style="text-align:center;max-width:640px;margin:0 auto;">
@@ -2367,67 +745,33 @@ a {
     </div>
 
     <div class="features-grid">
-      <div class="feat-card" style="--card-accent: #2563EB;">
-        <div class="feat-svg-box" style="background:rgba(37,99,235,0.1);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(37,99,235,0.1);font-size:30px;">📖</div>
         <h3 class="feat-title">Quality CBSE Education</h3>
         <p class="feat-desc">High-quality education with focus on deep conceptual clarity, English communication, and practical knowledge application.</p>
       </div>
-
-      <div class="feat-card" style="--card-accent: #10B981;">
-        <div class="feat-svg-box" style="background:rgba(16,185,129,0.1);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="5"/>
-            <path d="M20 21a8 8 0 1 0-16 0"/>
-            <path d="m15 14 2 2 4-4"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(16,185,129,0.1);font-size:30px;">👩‍🏫</div>
         <h3 class="feat-title">Expert Caring Faculty</h3>
         <p class="feat-desc">25+ highly qualified and compassionate teachers dedicated to mentoring every child with personalized attention.</p>
       </div>
-
-      <div class="feat-card" style="--card-accent: #FF8A00;">
-        <div class="feat-svg-box" style="background:rgba(255,138,0,0.12);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FF8A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(255,138,0,0.12);font-size:30px;">⭐</div>
         <h3 class="feat-title">100% Proven Results</h3>
         <p class="feat-desc">100% success rate every year — preparing students thoroughly for competitive exams and senior board classes.</p>
       </div>
-
-      <div class="feat-card" style="--card-accent: #7C3AED;">
-        <div class="feat-svg-box" style="background:rgba(124,58,237,0.1);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            <circle cx="12" cy="12" r="4"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(124,58,237,0.1);font-size:30px;">🎨</div>
         <h3 class="feat-title">Holistic Growth</h3>
         <p class="feat-desc">Beyond textbooks — nurturing creativity, public speaking, sports, moral character, and critical thinking.</p>
       </div>
-
-      <div class="feat-card" style="--card-accent: #0EA5E9;">
-        <div class="feat-svg-box" style="background:rgba(14,165,233,0.1);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(14,165,233,0.1);font-size:30px;">🛡️</div>
         <h3 class="feat-title">Safe &amp; Joyful Environment</h3>
         <p class="feat-desc">A secure, disciplined, and welcoming campus in Ranjita where every student feels valued and protected.</p>
       </div>
-
-      <div class="feat-card" style="--card-accent: #F43F5E;">
-        <div class="feat-svg-box" style="background:rgba(244,63,94,0.1);">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-          </svg>
-        </div>
+      <div class="feat-card">
+        <div class="feat-svg-box" style="background:rgba(244,63,94,0.1);font-size:30px;">🤝</div>
         <h3 class="feat-title">Strong Parent Partnership</h3>
         <p class="feat-desc">Regular parent-teacher meetings and transparent updates ensure every child's progress is celebrated together.</p>
       </div>
@@ -2435,9 +779,7 @@ a {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     7. CLASSES WE OFFER (DIRECT NURSERY TO CLASS 8 — NO BOXES)
-═══════════════════════════════════════════════════ -->
+<!-- 8. CLASSES WE OFFER (DIRECT NURSERY TO CLASS 8 — NO BOXES) -->
 <section id="classes" class="classes-simple-sec">
   <div class="classes-simple-banner">
     <div style="max-width:700px;">
@@ -2451,16 +793,13 @@ a {
     </div>
     <div>
       <a href="#admission-enquiry" class="btn-primary">
-        <span>Apply for Admission (Nursery – 8)</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <span>Apply for Admission (Nursery – 8) →</span>
       </a>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     8. EXAMINATION RESULTS SECTION (REDIRECTS TO NEW TAB)
-═══════════════════════════════════════════════════ -->
+<!-- 9. EXAMINATION RESULTS SECTION (REDIRECTS TO NEW TAB) -->
 <section id="results" class="result-portal-sec">
   <div class="result-portal-card">
     <div>
@@ -2473,14 +812,9 @@ a {
       <p class="result-portal-desc">
         View year-wise examination results and official result links for Chanakya Academy. Click the button below to open the complete Year-Wise Result Table in a new tab.
       </p>
-      <div class="result-portal-actions">
+      <div>
         <a href="results.html" target="_blank" rel="noopener" class="btn-result-newtab">
-          <span>Open Exam Results Portal</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            <polyline points="15 3 21 3 21 9"/>
-            <line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
+          <span>Open Exam Results Portal ↗</span>
         </a>
       </div>
     </div>
@@ -2502,22 +836,13 @@ a {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     9. PARENT TESTIMONIAL SECTION
-═══════════════════════════════════════════════════ -->
+<!-- 10. PARENT TESTIMONIAL SECTION -->
 <section class="testimonial-sec">
   <div class="test-wrap">
-    <svg class="test-quote-svg" viewBox="0 0 64 64" fill="none">
-      <circle cx="32" cy="32" r="30" fill="rgba(255,183,3,0.12)" stroke="rgba(255,183,3,0.3)" stroke-width="1.5"/>
-      <path d="M26 24C21.5 24 18 27.5 18 32C18 36.5 21.5 40 26 40C27 40 28 39.8 28.8 39.4L25 45H29.5L34 38.5C34.6 37.3 35 35.7 35 32C35 27.5 31 24 26 24ZM44 24C39.5 24 36 27.5 36 32C36 36.5 39.5 40 44 40C45 40 46 39.8 46.8 39.4L43 45H47.5L52 38.5C52.6 37.3 53 35.7 53 32C53 27.5 49 24 44 24Z" fill="#FFB703"/>
-    </svg>
-
     <div class="test-stars">★ ★ ★ ★ ★</div>
-
     <p class="test-quote-text">
       "Chanakya Academy has been instrumental in shaping my child's future. The teachers are caring, the environment is positive, and the education quality is excellent. We are proud to be part of this wonderful institution."
     </p>
-
     <div class="test-parent-pill">
       <div class="test-parent-avatar">👩</div>
       <div style="text-align:left;">
@@ -2528,9 +853,7 @@ a {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     10. CONTACT & WHATSAPP ADMISSION ENQUIRY
-═══════════════════════════════════════════════════ -->
+<!-- 11. CONTACT & WHATSAPP ADMISSION ENQUIRY -->
 <section id="contact" class="section">
   <div class="container">
     <div class="sec-badge">✦ Visit or Enquire</div>
@@ -2549,7 +872,6 @@ a {
               <div class="c-val">Ranjita, Harsidhi, East Champaran, Bihar – 845422</div>
             </div>
           </div>
-
           <div class="c-card">
             <div class="c-icon" style="background:rgba(16,185,129,0.1);color:var(--emerald);">⏰</div>
             <div>
@@ -2557,7 +879,6 @@ a {
               <div class="c-val">Monday – Saturday: 8:00 AM – 3:00 PM</div>
             </div>
           </div>
-
           <div class="c-card">
             <div class="c-icon" style="background:rgba(255,138,0,0.12);color:var(--saffron);">📞</div>
             <div>
@@ -2565,7 +886,6 @@ a {
               <a href="tel:+919470260589" class="c-val" style="color:var(--royal-blue);">+91 9470260589</a>
             </div>
           </div>
-
           <div class="c-card">
             <div class="c-icon" style="background:rgba(124,58,237,0.1);color:var(--violet);">✉️</div>
             <div>
@@ -2578,12 +898,7 @@ a {
         <div class="map-box">
           <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3565.0620324533966!2d84.71520977352692!3d26.67849847012011!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x28a52d99dc16875b%3A0x3ceb699e16e389c3!2sCHANAKYA%20ACADEMY%2C%20RANJITA!5e0!3m2!1sen!2sin!4v1766467125084!5m2!1sen!2sin" 
-            width="100%" 
-            height="230" 
-            style="border:0;display:block;" 
-            allowfullscreen 
-            loading="lazy" 
-            referrerpolicy="no-referrer-when-downgrade">
+            width="100%" height="230" style="border:0;display:block;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
           </iframe>
           <div class="map-caption">
             <div>
@@ -2600,20 +915,12 @@ a {
           <div class="enquiry-header">
             <div class="enquiry-header-top">
               <div class="wa-badge-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-
-                     2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+                <svg width="28" height="28" fill="white"><use href="#wa-icon"/></svg>
               </div>
               <div>
                 <h3 style="font-size:22px;font-weight:800;line-height:1.2;">Admission Enquiry</h3>
                 <p style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:3px;">Get instant admission details on WhatsApp</p>
               </div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-              <span style="background:rgba(255,255,255,0.14);padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;">✓ CBSE Pattern</span>
-              <span style="background:rgba(255,255,255,0.14);padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;">✓ Nursery to Class 8</span>
-              <span style="background:rgba(255,183,3,0.25);color:var(--gold);padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;">★ Fast Response</span>
             </div>
           </div>
 
@@ -2660,9 +967,7 @@ a {
               </div>
 
               <button type="submit" class="submit-wa-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+                <svg width="20" height="20" fill="white"><use href="#wa-icon"/></svg>
                 Send Enquiry on WhatsApp
               </button>
             </form>
@@ -2673,9 +978,7 @@ a {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════
-     11. FOOTER
-═══════════════════════════════════════════════════ -->
+<!-- 12. FOOTER -->
 <footer class="site-footer">
   <div class="footer-grid">
     <div>
@@ -2690,15 +993,10 @@ a {
         Leading CBSE pattern school from Nursery to Class 8. Run &amp; managed by <strong>Maa Saraswati Educational &amp; Social Welfare Trust</strong>. Registered by Education Dept., Govt. of Bihar.
       </p>
       <div class="footer-socials">
-        <a href="#" class="soc-btn" aria-label="Facebook">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        </a>
         <a href="#" class="soc-btn wa-link" data-wa="919470260589" aria-label="WhatsApp">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <svg width="15" height="15" fill="currentColor"><use href="#wa-icon"/></svg>
         </a>
-        <a href="tel:+919470260589" class="soc-btn" aria-label="Call Us">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        </a>
+        <a href="tel:+919470260589" class="soc-btn" aria-label="Call Us">📞</a>
       </div>
     </div>
 
@@ -2719,8 +1017,7 @@ a {
       <ul>
         <li><a href="tel:+919470260589">📞 +91 9470260589</a></li>
         <li><a href="mailto:chanakyaacademyranjita@gmail.com">✉️ chanakyaacademyranjita@gmail.com</a></li>
-        <li><a href="#contact">📍 Ranjita, Harsidhi</a></li>
-        <li><a href="#contact">🏛️ East Champaran, Bihar – 845422</a></li>
+        <li><a href="#contact">📍 Ranjita, Harsidhi, East Champaran – 845422</a></li>
         <li><a href="#contact">⏰ Mon – Sat: 8:00 AM – 3:00 PM</a></li>
       </ul>
     </div>
@@ -2732,25 +1029,18 @@ a {
   </div>
 </footer>
 
-<!-- ═══════════════════════════════════════════════════
-     12. FLOATING WHATSAPP FAB, BACK TO TOP, WA MODAL & ADMIN MODAL
-═══════════════════════════════════════════════════ -->
+<!-- FLOATING WHATSAPP & BACK TO TOP -->
 <a href="#" class="wa-floating wa-link" data-wa="919470260589" aria-label="Chat on WhatsApp">
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
+  <svg width="28" height="28" fill="white"><use href="#wa-icon"/></svg>
 </a>
-
 <button id="backTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to Top">↑</button>
 
-<!-- WhatsApp Modal Sheet -->
+<!-- WhatsApp Modal -->
 <div id="waModal" class="hidden">
   <div id="waBdrop" style="position:absolute;inset:0;"></div>
   <div class="wa-sheet">
     <div class="wa-hdr">
-      <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </div>
+      <svg width="24" height="24" fill="white"><use href="#wa-icon"/></svg>
       <div>
         <div style="font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;">Send via WhatsApp</div>
         <div style="font-size:12px;opacity:0.85;">Chanakya Academy Admission Desk</div>
@@ -2774,9 +1064,7 @@ a {
   <div class="admin-sheet">
     <div class="admin-hdr">
       <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,183,3,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;">
-          🛡️
-        </div>
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,183,3,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
         <div>
           <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;">Admin Result Control Panel</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.75);">Chanakya Academy • Exam &amp; Live Ticker Manager</div>
@@ -2817,7 +1105,7 @@ a {
 
         <div class="admin-table-wrap">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h4 style="font-size:15px;color:var(--navy);">All Exams (Click "Make Live" to Enable Link &amp; Start Ticker)</h4>
+            <h4 style="font-size:15px;color:var(--navy);">All Exams (Click "Make Result Live" to Enable Link &amp; Start Ticker)</h4>
             <a href="results.html" target="_blank" style="font-size:12.5px;font-weight:700;color:var(--royal-blue);">View Results Page ↗</a>
           </div>
           <table class="admin-table">
@@ -2839,44 +1127,32 @@ a {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     13. INTERACTIVE JAVASCRIPT
-═══════════════════════════════════════════════════ -->
+<!-- 13. SITE JAVASCRIPT -->
 <script>
-/* 1. SMART NAVBAR & BACK-TO-TOP ON SCROLL */
 var navbarWrap = document.getElementById('navbarWrap');
 var backTopBtn = document.getElementById('backTopBtn');
 
 function handleScroll() {
   var y = window.scrollY || window.pageYOffset;
-  if (y > 60) {
-    navbarWrap.classList.add('scrolled');
-  } else {
-    navbarWrap.classList.remove('scrolled');
-  }
+  navbarWrap.classList.toggle('scrolled', y > 60);
   backTopBtn.classList.toggle('show', y > 450);
 }
 window.addEventListener('scroll', handleScroll, { passive: true });
 handleScroll();
 
-/* 2. MOBILE DRAWER MENU */
 var menuToggle = document.getElementById('menuToggle');
 var mobileDrawer = document.getElementById('mobileDrawer');
-
 menuToggle.addEventListener('click', function() {
   mobileDrawer.classList.toggle('open');
 });
-
 document.querySelectorAll('.m-link').forEach(function(link) {
   link.addEventListener('click', function() {
     mobileDrawer.classList.remove('open');
   });
 });
 
-/* 3. ANIMATED STATS COUNTER */
 var statElements = document.querySelectorAll('.stat-number[data-count]');
 var statsCounted = false;
-
 if ('IntersectionObserver' in window) {
   var statsObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
@@ -2885,67 +1161,39 @@ if ('IntersectionObserver' in window) {
         statElements.forEach(function(el) {
           var target = parseInt(el.getAttribute('data-count'), 10);
           var suffix = el.getAttribute('data-suffix') || '';
-          var duration = 1400;
-          var startTime = null;
-
-          function step(timestamp) {
-            if (!startTime) startTime = timestamp;
-            var progress = Math.min((timestamp - startTime) / duration, 1);
-            var current = Math.floor(progress * target);
-            el.textContent = current + suffix;
-            if (progress < 1) {
-              window.requestAnimationFrame(step);
-            } else {
-              el.textContent = target + suffix;
-            }
+          var duration = 1400, startTime = null;
+          function step(ts) {
+            if (!startTime) startTime = ts;
+            var p = Math.min((ts - startTime) / duration, 1);
+            el.textContent = Math.floor(p * target) + suffix;
+            if (p < 1) window.requestAnimationFrame(step);
+            else el.textContent = target + suffix;
           }
           window.requestAnimationFrame(step);
         });
       }
     });
   }, { threshold: 0.35 });
-
   var statsSec = document.querySelector('.stats-section');
   if (statsSec) statsObserver.observe(statsSec);
 }
 
-/* 4. WHATSAPP ENQUIRY & MODAL LOGIC */
 var WA_NUMBER = '919470260589';
-
 function openWA(phone, msg) {
   var enc = encodeURIComponent(msg);
   var modal = document.getElementById('waModal');
   document.getElementById('waMsg').textContent = msg;
   document.getElementById('waApp').href = 'whatsapp://send?phone=' + phone + '&text=' + enc;
   document.getElementById('waWeb').href = 'https://web.whatsapp.com/send?phone=' + phone + '&text=' + enc;
-
-  function closeModal() {
-    modal.classList.add('hidden');
-  }
-
+  function closeModal() { modal.classList.add('hidden'); }
   document.getElementById('waClose').onclick = closeModal;
   document.getElementById('waBdrop').onclick = closeModal;
-
   document.getElementById('waCopy').onclick = function() {
-    try {
-      navigator.clipboard.writeText(msg);
-    } catch (e) {
-      var ta = document.createElement('textarea');
-      ta.value = msg;
-      ta.style.cssText = 'position:fixed;opacity:0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    }
+    navigator.clipboard.writeText(msg);
     document.getElementById('waCopy').textContent = '✓ Message Copied!';
-    setTimeout(function() {
-      document.getElementById('waCopy').textContent = '📋 Copy Message';
-    }, 2000);
+    setTimeout(function() { document.getElementById('waCopy').textContent = '📋 Copy Message'; }, 2000);
   };
-
   modal.classList.remove('hidden');
-
   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     window.location.href = 'whatsapp://send?phone=' + phone + '&text=' + enc;
   } else {
@@ -2964,7 +1212,6 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     '🏫 Class: ' + fd.get('class') + '\n' +
     '📝 Message: ' + (fd.get('message') || '(not provided)') + '\n\n' +
     '📍 Ranjita, Harsidhi, East Champaran, Bihar-845422';
-
   openWA(WA_NUMBER, formattedMsg);
   var formRef = e.target;
   setTimeout(function() { formRef.reset(); }, 500);
@@ -2973,29 +1220,16 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 document.querySelectorAll('.wa-link').forEach(function(el) {
   el.addEventListener('click', function(ev) {
     ev.preventDefault();
-    openWA(
-      el.getAttribute('data-wa') || WA_NUMBER,
-      'Hello! I want to know about admissions in Chanakya Academy, Ranjita.'
-    );
+    openWA(el.getAttribute('data-wa') || WA_NUMBER, 'Hello! I want to know about admissions in Chanakya Academy, Ranjita.');
   });
 });
 </script>
 
-<!-- ═══════════════════════════════════════════════════
-     14. FIREBASE REALTIME EXAM & ADMIN CONTROL SCRIPT
-═══════════════════════════════════════════════════ -->
+<!-- 14. FIREBASE REALTIME EXAM & ADMIN CONTROL SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCoEId1hUmkzxv8ulqwJcLNSdXBaMVSlOk",
@@ -3011,10 +1245,8 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const examsRef = collection(db, "exams");
-
 const DEFAULT_RESULT_URL = "https://ca-school.github.io/result/";
 
-// Admin Modal Elements
 const adminModal = document.getElementById("adminModal");
 const openAdminBtn = document.getElementById("openAdminBtn");
 const closeAdminBtn = document.getElementById("closeAdminBtn");
@@ -3026,26 +1258,17 @@ const adminLoginBtn = document.getElementById("adminLoginBtn");
 const addExamForm = document.getElementById("addExamForm");
 const adminExamTableBody = document.getElementById("adminExamTableBody");
 
-// Live Ticker & Result Section Elements
 const liveTicker = document.getElementById("live-result-ticker");
 const liveTickerLink = document.getElementById("live-result-ticker-link");
 const liveTickerMsg1 = document.getElementById("live-ticker-msg-1");
 const liveTickerMsg2 = document.getElementById("live-ticker-msg-2");
 const homeResultLiveBox = document.getElementById("homeResultLiveBox");
 
-// Open/Close Admin Modal
-openAdminBtn.addEventListener("click", () => {
-  adminModal.classList.add("open");
-});
-
-function closeAdminModal() {
-  adminModal.classList.remove("open");
-}
-
+openAdminBtn.addEventListener("click", () => adminModal.classList.add("open"));
+function closeAdminModal() { adminModal.classList.remove("open"); }
 closeAdminBtn.addEventListener("click", closeAdminModal);
 adminBackdrop.addEventListener("click", closeAdminModal);
 
-// Default Password Check: chanakya123
 function handleAdminLogin() {
   if (adminPassInput.value === "chanakya123") {
     adminLoginView.style.display = "none";
@@ -3055,25 +1278,17 @@ function handleAdminLogin() {
     alert("Incorrect Password! Please enter the valid admin password.");
   }
 }
-
 adminLoginBtn.addEventListener("click", handleAdminLogin);
 adminPassInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    handleAdminLogin();
-  }
+  if (e.key === "Enter") { e.preventDefault(); handleAdminLogin(); }
 });
 
-// Add Exam to Firebase (Prefilled with https://ca-school.github.io/result/ after reset too)
 addExamForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const examName = document.getElementById("examNameInput").value.trim();
   const year = document.getElementById("examYearInput").value.trim();
   let resultLink = document.getElementById("examLinkInput").value.trim() || DEFAULT_RESULT_URL;
-
-  if (!/^https?:\/\//i.test(resultLink)) {
-    resultLink = "https://" + resultLink;
-  }
+  if (!/^https?:\/\//i.test(resultLink)) resultLink = "https://" + resultLink;
 
   try {
     await addDoc(examsRef, {
@@ -3087,21 +1302,17 @@ addExamForm.addEventListener("submit", async (e) => {
     addExamForm.reset();
     document.getElementById("examYearInput").value = new Date().getFullYear();
     document.getElementById("examLinkInput").value = DEFAULT_RESULT_URL;
-    alert("Exam added successfully! You can make it LIVE anytime from the list below.");
+    alert("Exam added successfully! Click 'Make Result Live' below whenever result is ready.");
   } catch (err) {
     console.error("Firebase Add Error:", err);
-    alert("Error saving to Firebase! Make sure Firestore Database is enabled in Test Mode.");
+    alert("Error saving to Firebase! Make sure Firestore Database is enabled.");
   }
 });
 
-// Real-Time Listener for Live Ticker, Result Card & Admin Table
 onSnapshot(examsRef, (snapshot) => {
   const exams = [];
-  snapshot.forEach((docSnap) => {
-    exams.push({ id: docSnap.id, ...docSnap.data() });
-  });
+  snapshot.forEach((docSnap) => exams.push({ id: docSnap.id, ...docSnap.data() }));
 
-  // 1. Find Latest Live Exam for Main Page Ticker
   const liveExams = exams
     .filter((ex) => ex.isLive === true)
     .sort((a, b) => (b.liveUpdatedAt || 0) - (a.liveUpdatedAt || 0));
@@ -3112,14 +1323,14 @@ onSnapshot(examsRef, (snapshot) => {
     liveTicker.classList.add("active");
     liveTickerLink.href = newestLive.resultLink || DEFAULT_RESULT_URL;
 
-    const tickerAnnouncementHTML = `
+    const tickerHTML = `
       <span>📢 RESULT DECLARED: <strong style="color:#FFF3D1;">${newestLive.examName} (${newestLive.year})</strong> ka Result LIVE ho chuka hai!</span>
       <span style="color:#FFB703;">✦</span>
       <span>Direct Result dekhne ke liye is Ticker par click karein</span>
       <span style="color:#FFB703;">✦</span>
     `;
-    liveTickerMsg1.innerHTML = tickerAnnouncementHTML;
-    liveTickerMsg2.innerHTML = tickerAnnouncementHTML;
+    liveTickerMsg1.innerHTML = tickerHTML;
+    liveTickerMsg2.innerHTML = tickerHTML;
 
     if (homeResultLiveBox) {
       homeResultLiveBox.innerHTML = `
@@ -3136,7 +1347,6 @@ onSnapshot(examsRef, (snapshot) => {
     }
   }
 
-  // 2. Render Admin Table
   exams.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   adminExamTableBody.innerHTML = "";
 
@@ -3154,9 +1364,7 @@ onSnapshot(examsRef, (snapshot) => {
         <a href="${exam.resultLink}" target="_blank" style="font-size:11px;color:var(--royal-blue);">Preview Link ↗</a>
       </td>
       <td>
-        ${exam.isLive
-          ? '<span style="color:#16A34A;font-weight:800;">● LIVE</span>'
-          : '<span style="color:#64748B;font-weight:600;">Disabled</span>'}
+        ${exam.isLive ? '<span style="color:#16A34A;font-weight:800;">● LIVE</span>' : '<span style="color:#64748B;font-weight:600;">Disabled</span>'}
       </td>
       <td style="white-space:nowrap;">
         <button type="button" class="btn-live-toggle ${exam.isLive ? 'btn-stop-live' : 'btn-go-live'}" data-id="${exam.id}" data-live="${exam.isLive}">
@@ -3168,7 +1376,6 @@ onSnapshot(examsRef, (snapshot) => {
     adminExamTableBody.appendChild(tr);
   });
 
-  // Attach Live Toggle Handlers
   document.querySelectorAll(".btn-live-toggle").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-id");
@@ -3180,7 +1387,6 @@ onSnapshot(examsRef, (snapshot) => {
     });
   });
 
-  // Attach Delete Handlers
   document.querySelectorAll(".btn-del-exam").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-del");
