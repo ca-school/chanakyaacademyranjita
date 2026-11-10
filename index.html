@@ -49,11 +49,16 @@
   --radius-sm: 14px;
   --radius-md: 22px;
   --radius-lg: 32px;
+  --live-ticker-offset: 0px;
+}
+
+body.has-live-result {
+  --live-ticker-offset: 40px;
 }
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 100px;
+  scroll-padding-top: 120px;
 }
 
 body {
@@ -88,112 +93,8 @@ a {
   background-position: 0 0, 16px 16px;
 }
 
-/* ═══════════════════════════════════════════════════
-   1. ANIMATED SVG INTRO LOADER
-═══════════════════════════════════════════════════ */
-#intro-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: radial-gradient(circle at center, #162244 0%, #070C1C 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s ease;
-}
-
-#intro-loader.hide {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.loader-stage {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loader-mandala {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  animation: spinSlow 18s linear infinite;
-}
-
-.loader-mandala-reverse {
-  position: absolute;
-  inset: 18px;
-  width: calc(100% - 36px);
-  height: calc(100% - 36px);
-  animation: spinReverse 12s linear infinite;
-}
-
-.loader-draw-ring {
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
-  animation: drawStroke 1.8s ease-out forwards;
-}
-
-.loader-logo-box {
-  width: 104px;
-  height: 104px;
-  border-radius: 28px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 50px rgba(255, 183, 3, 0.45);
-  z-index: 2;
-  transform: scale(0.5);
-  opacity: 0;
-  animation: popLogo 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
-}
-
-.loader-logo-box img {
-  width: 76px;
-  height: 76px;
-  object-fit: contain;
-}
-
-.loader-text {
-  margin-top: 22px;
-  text-align: center;
-  opacity: 0;
-  transform: translateY(15px);
-  animation: fadeUpText 0.6s ease 0.5s forwards;
-}
-
-.loader-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 26px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-}
-
-.loader-sub {
-  font-size: 13px;
-  color: var(--gold);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-top: 4px;
-  font-weight: 600;
-}
-
 @keyframes drawStroke {
   to { stroke-dashoffset: 0; }
-}
-@keyframes popLogo {
-  to { transform: scale(1); opacity: 1; }
-}
-@keyframes fadeUpText {
-  to { transform: translateY(0); opacity: 1; }
 }
 @keyframes spinSlow {
   to { transform: rotate(360deg); }
@@ -203,7 +104,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   2. TOP MARQUEE ANNOUNCEMENT BAR
+   1. TOP MARQUEE ANNOUNCEMENT BAR & LIVE RESULT TICKER
 ═══════════════════════════════════════════════════ */
 .top-ticker {
   position: fixed;
@@ -213,7 +114,7 @@ a {
   height: 36px;
   background: var(--navy);
   color: rgba(255, 255, 255, 0.88);
-  z-index: 9002;
+  z-index: 9003;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -260,12 +161,108 @@ a {
   to { transform: translateX(-50%); }
 }
 
+/* 🔴 DYNAMIC LIVE RESULT ANNOUNCEMENT TICKER */
+#live-result-ticker {
+  display: none;
+  position: fixed;
+  top: 36px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(90deg, #DC2626 0%, #B91C1C 50%, #991B1B 100%);
+  color: #ffffff;
+  z-index: 9002;
+  overflow: hidden;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#live-result-ticker.active {
+  display: flex;
+}
+
+#live-result-ticker-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.live-ticker-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: liveTickerMove 18s linear infinite;
+}
+
+#live-result-ticker:hover .live-ticker-track {
+  animation-play-state: paused;
+}
+
+.live-pulse-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #DC2626;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  margin-right: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #DC2626;
+  animation: blinkDot 1s infinite;
+}
+
+.live-ticker-msg {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.live-ticker-cta {
+  margin-left: 14px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+@keyframes liveTickerMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes blinkDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
+}
+
 /* ═══════════════════════════════════════════════════
-   3. SMART ADAPTIVE NAVBAR + DYNAMIC PILL
+   2. SMART ADAPTIVE NAVBAR + DYNAMIC PILL + ADMIN ICON
 ═══════════════════════════════════════════════════ */
 .navbar-wrap {
   position: fixed;
-  top: 36px;
+  top: calc(36px + var(--live-ticker-offset));
   left: 0;
   right: 0;
   z-index: 9000;
@@ -294,7 +291,7 @@ a {
 }
 
 .navbar-wrap.scrolled .navbar-inner {
-  max-width: 880px;
+  max-width: 960px;
   background: rgba(11, 19, 43, 0.92);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 20px 40px -12px rgba(11, 19, 43, 0.35);
@@ -360,7 +357,7 @@ a {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 99px;
   transition: all 0.25s ease;
 }
@@ -388,7 +385,7 @@ a {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  padding: 10px 22px;
+  padding: 10px 20px;
   border-radius: 99px;
   box-shadow: 0 6px 20px rgba(255, 138, 0, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -397,6 +394,41 @@ a {
 .nav-cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(255, 138, 0, 0.5);
+}
+
+/* Admin Icon Button in Navbar */
+.admin-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 138, 0, 0.35);
+  background: rgba(255, 183, 3, 0.14);
+  color: var(--navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.admin-nav-btn:hover {
+  background: var(--gold);
+  color: var(--navy);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(255, 183, 3, 0.4);
+}
+
+.navbar-wrap.scrolled .admin-nav-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--gold);
+  border-color: rgba(255, 183, 3, 0.4);
+}
+
+.navbar-wrap.scrolled .admin-nav-btn:hover {
+  background: var(--gold);
+  color: var(--navy);
 }
 
 /* Mobile Menu Button */
@@ -421,7 +453,7 @@ a {
 /* Mobile Drawer */
 .mobile-drawer {
   position: fixed;
-  top: 104px;
+  top: calc(104px + var(--live-ticker-offset));
   left: 16px;
   right: 16px;
   background: var(--navy);
@@ -458,17 +490,17 @@ a {
   background: rgba(255,255,255,0.08);
 }
 
-@media (max-width: 820px) {
+@media (max-width: 880px) {
   .nav-links a.nav-item { display: none; }
   .menu-toggle { display: inline-flex; }
 }
 
 /* ═══════════════════════════════════════════════════
-   4. HERO SECTION WITH MASTERPIECE ANIMATED SVG
+   3. HERO SECTION WITH MASTERPIECE ANIMATED SVG
 ═══════════════════════════════════════════════════ */
 .hero {
   position: relative;
-  padding: 150px 24px 90px;
+  padding: calc(150px + var(--live-ticker-offset)) 24px 90px;
   overflow: hidden;
   background: radial-gradient(circle at 85% 20%, rgba(255, 183, 3, 0.16) 0%, transparent 45%),
               radial-gradient(circle at 10% 80%, rgba(37, 99, 235, 0.10) 0%, transparent 50%),
@@ -554,7 +586,7 @@ a {
 .hero-highlight-svg path {
   stroke-dasharray: 300;
   stroke-dashoffset: 300;
-  animation: drawStroke 1.4s ease-out 1.2s forwards;
+  animation: drawStroke 1.4s ease-out 0.3s forwards;
 }
 
 .hero-desc {
@@ -703,7 +735,7 @@ a {
 }
 
 @media (max-width: 960px) {
-  .hero { padding-top: 130px; }
+  .hero { padding-top: calc(130px + var(--live-ticker-offset)); }
   .hero-container { grid-template-columns: 1fr; text-align: center; }
   .hero-desc { margin-left: auto; margin-right: auto; }
   .hero-actions { justify-content: center; }
@@ -711,7 +743,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   5. ANIMATED STATS RIBBON
+   4. ANIMATED STATS RIBBON
 ═══════════════════════════════════════════════════ */
 .stats-section {
   position: relative;
@@ -800,7 +832,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   6. COMMON SECTION HEADINGS
+   5. COMMON SECTION HEADINGS
 ═══════════════════════════════════════════════════ */
 .section {
   padding: 96px 24px;
@@ -844,7 +876,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   7. ABOUT SECTION (EDITORIAL + ROTATING GOVT SEAL)
+   6. ABOUT SECTION (EDITORIAL + ROTATING GOVT SEAL)
 ═══════════════════════════════════════════════════ */
 .about-grid {
   display: grid;
@@ -996,7 +1028,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   8. FEATURES BENTO GRID (CUSTOM ANIMATED SVGs)
+   7. FEATURES BENTO GRID (CUSTOM ANIMATED SVGs)
 ═══════════════════════════════════════════════════ */
 .features-sec {
   background: var(--bg-warm);
@@ -1079,7 +1111,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   9. INTERACTIVE CLASSES EXPLORER (NURSERY TO CLASS 8)
+   8. INTERACTIVE CLASSES EXPLORER (NURSERY TO CLASS 8)
 ═══════════════════════════════════════════════════ */
 .classes-header-row {
   display: flex;
@@ -1245,6 +1277,130 @@ a {
 @media (max-width: 540px) {
   .classes-grid { grid-template-columns: 1fr; }
   .class-card.senior-highlight { grid-column: span 1; }
+}
+
+/* ═══════════════════════════════════════════════════
+   9. EXAMINATION RESULTS SECTION (REDIRECTS TO NEW TAB)
+═══════════════════════════════════════════════════ */
+.result-portal-sec {
+  padding: 40px 24px 96px;
+}
+
+.result-portal-card {
+  max-width: 1180px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
+  border-radius: 32px;
+  padding: 52px 48px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(11, 19, 43, 0.35);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.result-portal-card::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 183, 3, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.result-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 183, 3, 0.18);
+  border: 1px solid rgba(255, 183, 3, 0.4);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  margin-bottom: 18px;
+}
+
+.result-portal-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  color: #fff;
+}
+
+.result-portal-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.result-portal-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-result-newtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  color: var(--navy);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16.5px;
+  font-weight: 800;
+  padding: 16px 32px;
+  border-radius: 99px;
+  box-shadow: 0 12px 30px rgba(255, 138, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-result-newtab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(255, 183, 3, 0.55);
+}
+
+.result-visual-box {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  padding: 26px;
+  text-align: center;
+}
+
+.result-status-Dynamic {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(11, 19, 43, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 900px) {
+  .result-portal-card {
+    grid-template-columns: 1fr;
+    padding: 36px 26px;
+    text-align: center;
+  }
+  .result-portal-desc { margin-left: auto; margin-right: auto; }
+  .result-portal-actions { justify-content: center; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1607,7 +1763,7 @@ a {
 }
 
 /* ═══════════════════════════════════════════════════
-   13. FLOATING WA BUTTON, BACK TO TOP & WA MODAL
+   13. FLOATING WA BUTTON, BACK TO TOP, WA MODAL & ADMIN MODAL
 ═══════════════════════════════════════════════════ */
 .wa-floating {
   position: fixed;
@@ -1753,56 +1909,160 @@ a {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* 🔐 ADMIN EXAM CONTROL MODAL */
+#adminModal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(7, 12, 28, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+#adminModal.open {
+  display: flex;
+}
+
+.admin-sheet {
+  background: #fff;
+  border-radius: 26px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+  position: relative;
+  z-index: 2;
+}
+
+.admin-hdr {
+  background: linear-gradient(135deg, var(--navy) 0%, #1E3A8A 100%);
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.admin-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-body {
+  padding: 24px 26px 28px;
+}
+
+.admin-btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--navy), var(--royal-blue));
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 22px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.admin-btn-submit:hover {
+  background: linear-gradient(135deg, var(--saffron), #FF5E00);
+}
+
+.admin-table-wrap {
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 20px;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.admin-table th, .admin-table td {
+  padding: 11px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.admin-table th {
+  background: var(--bg-warm);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.btn-live-toggle {
+  padding: 7px 13px;
+  border-radius: 99px;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-go-live {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.btn-go-live:hover {
+  background: #16A34A;
+  color: #fff;
+}
+
+.btn-stop-live {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.btn-stop-live:hover {
+  background: #DC2626;
+  color: #fff;
+}
+
+.btn-del-exam {
+  background: #F1F5F9;
+  color: #EF4444;
+  border: none;
+  padding: 7px 11px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-left: 6px;
+  font-weight: 700;
+}
 </style>
 </head>
 
 <body class="bg-grid-pattern">
 
 <!-- ═══════════════════════════════════════════════════
-     1. ANIMATED SVG MANDALA INTRO LOADER
-═══════════════════════════════════════════════════ -->
-<div id="intro-loader">
-  <div class="loader-stage">
-    <!-- Outer Rotating Mandala SVG -->
-    <svg class="loader-mandala" viewBox="0 0 220 220" fill="none">
-      <circle class="loader-draw-ring" cx="110" cy="110" r="96" stroke="url(#goldGrad)" stroke-width="2" stroke-dasharray="8 8"/>
-      <circle cx="110" cy="110" r="82" stroke="rgba(255,183,3,0.25)" stroke-width="1.5"/>
-      <!-- Knowledge Rays -->
-      <g stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round">
-        <line x1="110" y1="4" x2="110" y2="18"/>
-        <line x1="110" y1="202" x2="110" y2="216"/>
-        <line x1="4" y1="110" x2="18" y2="110"/>
-        <line x1="202" y1="110" x2="216" y2="110"/>
-        <line x1="35" y1="35" x2="45" y2="45"/>
-        <line x1="175" y1="175" x2="185" y2="185"/>
-        <line x1="185" y1="35" x2="175" y2="45"/>
-        <line x1="45" y1="175" x2="35" y2="185"/>
-      </g>
-      <defs>
-        <linearGradient id="goldGrad" x1="0" y1="0" x2="220" y2="220" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#FFB703"/>
-          <stop offset="100%" stop-color="#FF8A00"/>
-        </linearGradient>
-      </defs>
-    </svg>
-
-    <!-- Inner Counter-Rotating Geometric Star -->
-    <svg class="loader-mandala-reverse" viewBox="0 0 180 180" fill="none">
-      <polygon points="90,10 112,68 170,90 112,112 90,170 68,112 10,90 68,68" stroke="rgba(255,183,3,0.35)" stroke-width="1.5" fill="rgba(255,183,3,0.04)"/>
-    </svg>
-
-    <div class="loader-logo-box">
-      <img src="https://i.postimg.cc/bNgNqbC2/Screenshot-2024-07-06-12-09-05-80-removebg-preview.png" alt="Chanakya Academy Logo">
-    </div>
-  </div>
-  <div class="loader-text">
-    <div class="loader-title">Chanakya Academy</div>
-    <div class="loader-sub">Ranjita • East Champaran</div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     2. TOP MARQUEE ANNOUNCEMENT STRIP
+     1. TOP MARQUEE ANNOUNCEMENT STRIP
 ═══════════════════════════════════════════════════ -->
 <div class="top-ticker">
   <div class="ticker-track">
@@ -1830,8 +2090,24 @@ a {
   </div>
 </div>
 
+<!-- 🔴 DYNAMIC LIVE RESULT ANNOUNCEMENT TICKER (Auto-shows when any Exam Result is Live) -->
+<div id="live-result-ticker">
+  <a id="live-result-ticker-link" href="results.html" target="_blank" rel="noopener">
+    <div class="live-ticker-track">
+      <span class="live-pulse-pill">
+        <span class="live-pulse-dot"></span>
+        LIVE RESULT
+      </span>
+      <span class="live-ticker-msg" id="live-result-ticker-text">
+        Examination Result is now LIVE! Click here to view your result directly.
+      </span>
+      <span class="live-ticker-cta">Check Result Now ↗</span>
+    </div>
+  </a>
+</div>
+
 <!-- ═══════════════════════════════════════════════════
-     3. SMART FLOATING NAVBAR
+     2. SMART FLOATING NAVBAR (WITH RESULTS & ADMIN ICON)
 ═══════════════════════════════════════════════════ -->
 <header class="navbar-wrap" id="navbarWrap">
   <div class="navbar-inner">
@@ -1849,11 +2125,19 @@ a {
       <a href="#about" class="nav-item">About Us</a>
       <a href="#features" class="nav-item">Why Us</a>
       <a href="#classes" class="nav-item">Classes (N–8)</a>
+      <a href="#results" class="nav-item" style="color:var(--saffron);font-weight:700;">Results</a>
       <a href="#contact" class="nav-item">Location</a>
       <a href="#admission-enquiry" class="nav-cta">
         <span>Enroll Child</span>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
+      <!-- 🔐 Admin Icon Button -->
+      <button class="admin-nav-btn" id="openAdminBtn" title="Admin Result Control Panel" aria-label="Admin Result Control Panel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <circle cx="12" cy="11" r="3"/>
+        </svg>
+      </button>
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </button>
@@ -1867,12 +2151,14 @@ a {
   <a href="#about" class="m-link">About Our Trust <span>→</span></a>
   <a href="#features" class="m-link">Special Features <span>→</span></a>
   <a href="#classes" class="m-link">Classes (Nursery – Class 8) <span>→</span></a>
+  <a href="#results" class="m-link" style="color:var(--gold);">📊 Exam Results Section <span>→</span></a>
+  <a href="results.html" target="_blank" class="m-link" style="color:#38BDF8;">🏆 All Results Portal (New Tab) <span>↗</span></a>
   <a href="#contact" class="m-link">Campus &amp; Contact <span>→</span></a>
   <a href="#admission-enquiry" class="m-link" style="background:var(--saffron);color:var(--navy);font-weight:800;margin-top:8px;justify-content:center;">🎓 Apply for Admission</a>
 </div>
 
 <!-- ═══════════════════════════════════════════════════
-     4. HERO SECTION WITH MASTERPIECE ANIMATED SVG
+     3. HERO SECTION WITH MASTERPIECE ANIMATED SVG
 ═══════════════════════════════════════════════════ -->
 <section class="hero" id="home">
   <!-- Subtle Rotating Background Mandala SVG -->
@@ -1911,9 +2197,9 @@ a {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Enroll Your Child
         </a>
-        <a href="#classes" class="btn-secondary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Explore Classes (N–8)
+        <a href="results.html" target="_blank" class="btn-secondary" style="border-color:rgba(255,138,0,0.4);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF8A00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Exam Results ↗
         </a>
       </div>
 
@@ -2061,7 +2347,7 @@ a {
 </section>
 
 <!-- ═══════════════════════════════════════════════════
-     5. ANIMATED STATS RIBBON
+     4. ANIMATED STATS RIBBON
 ═══════════════════════════════════════════════════ -->
 <div class="stats-section">
   <div class="stats-container">
@@ -2130,7 +2416,7 @@ a {
 </div>
 
 <!-- ═══════════════════════════════════════════════════
-     6. ABOUT SECTION WITH ROTATING GOVT. SEAL SVG
+     5. ABOUT SECTION WITH ROTATING GOVT. SEAL SVG
 ═══════════════════════════════════════════════════ -->
 <section id="about" class="section">
   <div class="container">
@@ -2225,7 +2511,7 @@ a {
 </section>
 
 <!-- ═══════════════════════════════════════════════════
-     7. FEATURES SECTION WITH BESPOKE ANIMATED SVGs
+     6. FEATURES SECTION WITH BESPOKE ANIMATED SVGs
 ═══════════════════════════════════════════════════ -->
 <section id="features" class="section features-sec">
   <div class="container">
@@ -2313,7 +2599,7 @@ a {
 </section>
 
 <!-- ═══════════════════════════════════════════════════
-     8. INTERACTIVE CLASSES EXPLORER (NURSERY TO CLASS 8)
+     7. INTERACTIVE CLASSES EXPLORER (NURSERY TO CLASS 8)
 ═══════════════════════════════════════════════════ -->
 <section id="classes" class="section">
   <div class="container">
@@ -2374,6 +2660,14 @@ a {
       </div>
 
       <!-- Class 1 -->
+      <div class="class-card" data-stage="primary" style="--cls-color:#F43F5E;--cls-bg:rgba(244,63,94,0.1);">
+        <div>
+          <div class="class-card-top">
+            <div class="class-badge">1</div>
+            <span class="class-stage-pill">Primary</span>
+          </div>
+          <div class="class-name">Class
+             <!-- Class 1 -->
       <div class="class-card" data-stage="primary" style="--cls-color:#F43F5E;--cls-bg:rgba(244,63,94,0.1);">
         <div>
           <div class="class-card-top">
@@ -2481,6 +2775,50 @@ a {
 </section>
 
 <!-- ═══════════════════════════════════════════════════
+     8. EXAMINATION RESULTS SECTION (REDIRECTS TO NEW TAB)
+═══════════════════════════════════════════════════ -->
+<section id="results" class="result-portal-sec">
+  <div class="result-portal-card">
+    <div>
+      <div class="result-live-pill">
+        <span>📊 Official Result Portal</span>
+      </div>
+      <h2 class="result-portal-title">
+        Check Examination <span class="font-serif-italic" style="color:var(--gold);">Results Online</span>
+      </h2>
+      <p class="result-portal-desc">
+        View year-wise examination results and official result links for Chanakya Academy. Click the button below to open the complete Year-Wise Result Table in a new tab.
+      </p>
+      <div class="result-portal-actions">
+        <a href="results.html" target="_blank" rel="noopener" class="btn-result-newtab">
+          <span>Open Exam Results Portal</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="result-visual-box">
+      <div style="width:68px;height:68px;border-radius:20px;background:rgba(255,183,3,0.18);border:1px solid rgba(255,183,3,0.35);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;">
+        🏆
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:#fff;">
+        Year-Wise Exam Directory
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;">
+        Real-Time Result Status &amp; Direct Links
+      </div>
+      <div class="result-status-Dynamic" id="homeResultLiveBox">
+        Checking live exam announcements...
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
      9. PARENT TESTIMONIAL SECTION
 ═══════════════════════════════════════════════════ -->
 <section class="testimonial-sec">
@@ -2550,7 +2888,7 @@ a {
             <div>
               <div class="c-label">Official Email</div>
               <a href="mailto:chanakyaacademyranjita@gmail.com" class="c-val" style="font-size:14.5px;word-break:break-all;">chanakyaacademyranjita@gmail.com</a>
-              </div>
+            </div>
           </div>
         </div>
 
@@ -2689,6 +3027,7 @@ a {
         <li><a href="#about">About Our Trust</a></li>
         <li><a href="#features">Why Chanakya Academy</a></li>
         <li><a href="#classes">Classes (Nursery – 8)</a></li>
+        <li><a href="results.html" target="_blank" style="color:var(--gold);font-weight:700;">Examination Results ↗</a></li>
         <li><a href="#admission-enquiry">Online Admission Enquiry</a></li>
       </ul>
     </div>
@@ -2712,7 +3051,7 @@ a {
 </footer>
 
 <!-- ═══════════════════════════════════════════════════
-     12. FLOATING WHATSAPP FAB, BACK TO TOP & WA MODAL
+     12. FLOATING WHATSAPP FAB, BACK TO TOP, WA MODAL & ADMIN MODAL
 ═══════════════════════════════════════════════════ -->
 <a href="#" class="wa-floating wa-link" data-wa="919470260589" aria-label="Chat on WhatsApp">
   <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
@@ -2747,19 +3086,82 @@ a {
   </div>
 </div>
 
+<!-- 🔐 ADMIN EXAM & RESULT CONTROL MODAL -->
+<div id="adminModal">
+  <div id="adminBackdrop" style="position:absolute;inset:0;"></div>
+  <div class="admin-sheet">
+    <div class="admin-hdr">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,183,3,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;">
+          🛡️
+        </div>
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;">Admin Result Control Panel</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Chanakya Academy • Exam &amp; Live Ticker Manager</div>
+        </div>
+      </div>
+      <button class="admin-close-btn" id="closeAdminBtn" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="admin-body">
+      <!-- STEP 1: PASSWORD LOGIN -->
+      <div id="adminLoginView">
+        <div class="form-group">
+          <label class="form-label">Admin Password *</label>
+          <input type="password" id="adminPassInput" class="form-control" placeholder="Enter admin password..." />
+        </div>
+        <button type="button" id="adminLoginBtn" class="admin-btn-submit">Unlock Admin Panel →</button>
+      </div>
+
+      <!-- STEP 2: ADD EXAM & MANAGE LIVE RESULTS -->
+      <div id="adminDashboardView" style="display:none;">
+        <form id="addExamForm">
+          <div class="form-row">
+            <div>
+              <label class="form-label">Exam Name *</label>
+              <input type="text" id="examNameInput" class="form-control" placeholder="e.g. Annual Exam Class 8" required />
+            </div>
+            <div>
+              <label class="form-label">Academic Year *</label>
+              <input type="number" id="examYearInput" class="form-control" value="2026" placeholder="e.g. 2026" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Result Page Link (URL) *</label>
+            <input type="url" id="examLinkInput" class="form-control" placeholder="https://example.com/result-link" required />
+          </div>
+          <button type="submit" class="admin-btn-submit">+ Add Exam to Result Table (Initially Disabled)</button>
+        </form>
+
+        <div class="admin-table-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h4 style="font-size:15px;color:var(--navy);">All Exams (Click "Make Live" to Enable Link &amp; Start Ticker)</h4>
+            <a href="results.html" target="_blank" style="font-size:12.5px;font-weight:700;color:var(--royal-blue);">View Results Page ↗</a>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Exam Name</th>
+                <th>Status</th>
+                <th>Control</th>
+              </tr>
+            </thead>
+            <tbody id="adminExamTableBody">
+              <tr><td colspan="4">Loading exams from Firebase...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════
      13. INTERACTIVE JAVASCRIPT
 ═══════════════════════════════════════════════════ -->
 <script>
-/* 1. HIDE SVG INTRO LOADER */
-window.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    var loader = document.getElementById('intro-loader');
-    if (loader) loader.classList.add('hide');
-  }, 1900);
-});
-
-/* 2. SMART NAVBAR & BACK-TO-TOP ON SCROLL */
+/* 1. SMART NAVBAR & BACK-TO-TOP ON SCROLL */
 var navbarWrap = document.getElementById('navbarWrap');
 var backTopBtn = document.getElementById('backTopBtn');
 
@@ -2775,7 +3177,7 @@ function handleScroll() {
 window.addEventListener('scroll', handleScroll, { passive: true });
 handleScroll();
 
-/* 3. MOBILE DRAWER MENU */
+/* 2. MOBILE DRAWER MENU */
 var menuToggle = document.getElementById('menuToggle');
 var mobileDrawer = document.getElementById('mobileDrawer');
 
@@ -2789,7 +3191,7 @@ document.querySelectorAll('.m-link').forEach(function(link) {
   });
 });
 
-/* 4. ANIMATED STATS COUNTER */
+/* 3. ANIMATED STATS COUNTER */
 var statElements = document.querySelectorAll('.stat-number[data-count]');
 var statsCounted = false;
 
@@ -2825,7 +3227,7 @@ if ('IntersectionObserver' in window) {
   if (statsSec) statsObserver.observe(statsSec);
 }
 
-/* 5. INTERACTIVE CLASS FILTER TABS (NURSERY TO CLASS 8) */
+/* 4. INTERACTIVE CLASS FILTER TABS (NURSERY TO CLASS 8) */
 var classTabs = document.querySelectorAll('.class-tab');
 var classCards = document.querySelectorAll('#classesGrid .class-card');
 
@@ -2845,7 +3247,7 @@ classTabs.forEach(function(tab) {
   });
 });
 
-/* 6. CLICK CLASS CARD -> AUTO-SELECT IN ADMISSION FORM */
+/* 5. CLICK CLASS CARD -> AUTO-SELECT IN ADMISSION FORM */
 function selectClassAndScroll(className) {
   var selectEl = document.getElementById('classSelect');
   var formSection = document.getElementById('admission-enquiry');
@@ -2865,7 +3267,7 @@ function selectClassAndScroll(className) {
   }
 }
 
-/* 7. WHATSAPP ENQUIRY & MODAL LOGIC */
+/* 6. WHATSAPP ENQUIRY & MODAL LOGIC */
 var WA_NUMBER = '919470260589';
 
 function openWA(phone, msg) {
@@ -2933,6 +3335,205 @@ document.querySelectorAll('.wa-link').forEach(function(el) {
       el.getAttribute('data-wa') || WA_NUMBER,
       'Hello! I want to know about admissions in Chanakya Academy, Ranjita.'
     );
+  });
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     14. FIREBASE REALTIME EXAM & ADMIN CONTROL SCRIPT
+═══════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCoEId1hUmkzxv8ulqwJcLNSdXBaMVSlOk",
+  authDomain: "schoolsiteexamcontrol.firebaseapp.com",
+  projectId: "schoolsiteexamcontrol",
+  storageBucket: "schoolsiteexamcontrol.firebasestorage.app",
+  messagingSenderId: "754891419941",
+  appId: "1:754891419941:web:4f31debbeff534492feacc",
+  measurementId: "G-L6TYJBCW28"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+const examsRef = collection(db, "exams");
+
+// Admin Modal Elements
+const adminModal = document.getElementById("adminModal");
+const openAdminBtn = document.getElementById("openAdminBtn");
+const closeAdminBtn = document.getElementById("closeAdminBtn");
+const adminBackdrop = document.getElementById("adminBackdrop");
+const adminLoginView = document.getElementById("adminLoginView");
+const adminDashboardView = document.getElementById("adminDashboardView");
+const adminPassInput = document.getElementById("adminPassInput");
+const adminLoginBtn = document.getElementById("adminLoginBtn");
+const addExamForm = document.getElementById("addExamForm");
+const adminExamTableBody = document.getElementById("adminExamTableBody");
+
+// Live Ticker & Result Section Elements
+const liveTicker = document.getElementById("live-result-ticker");
+const liveTickerLink = document.getElementById("live-result-ticker-link");
+const liveTickerText = document.getElementById("live-result-ticker-text");
+const homeResultLiveBox = document.getElementById("homeResultLiveBox");
+
+// Open/Close Admin Modal
+openAdminBtn.addEventListener("click", () => {
+  adminModal.classList.add("open");
+});
+
+function closeAdminModal() {
+  adminModal.classList.remove("open");
+}
+
+closeAdminBtn.addEventListener("click", closeAdminModal);
+adminBackdrop.addEventListener("click", closeAdminModal);
+
+// Default Password Check: chanakya123
+function handleAdminLogin() {
+  if (adminPassInput.value === "chanakya123") {
+    adminLoginView.style.display = "none";
+    adminDashboardView.style.display = "block";
+    adminPassInput.value = "";
+  } else {
+    alert("Incorrect Password! Please enter the valid admin password.");
+  }
+}
+
+adminLoginBtn.addEventListener("click", handleAdminLogin);
+adminPassInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleAdminLogin();
+  }
+});
+
+// Add Exam to Firebase
+addExamForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const examName = document.getElementById("examNameInput").value.trim();
+  const year = document.getElementById("examYearInput").value.trim();
+  let resultLink = document.getElementById("examLinkInput").value.trim();
+
+  if (!/^https?:\/\//i.test(resultLink)) {
+    resultLink = "https://" + resultLink;
+  }
+
+  try {
+    await addDoc(examsRef, {
+      examName,
+      year,
+      resultLink,
+      isLive: false,
+      createdAt: Date.now(),
+      liveUpdatedAt: 0
+    });
+    addExamForm.reset();
+    document.getElementById("examYearInput").value = new Date().getFullYear();
+    alert("Exam added successfully! You can make it LIVE anytime from the list below.");
+  } catch (err) {
+    console.error("Firebase Add Error:", err);
+    alert("Error saving to Firebase! Make sure Firestore Database is enabled in Test Mode.");
+  }
+});
+
+// Real-Time Listener for Live Ticker, Result Card & Admin Table
+onSnapshot(examsRef, (snapshot) => {
+  const exams = [];
+  snapshot.forEach((docSnap) => {
+    exams.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  // 1. Find Latest Live Exam for Main Page Ticker
+  const liveExams = exams
+    .filter((ex) => ex.isLive === true)
+    .sort((a, b) => (b.liveUpdatedAt || 0) - (a.liveUpdatedAt || 0));
+
+  if (liveExams.length > 0) {
+    const newestLive = liveExams[0];
+    document.body.classList.add("has-live-result");
+    liveTicker.classList.add("active");
+    liveTickerLink.href = newestLive.resultLink;
+    liveTickerText.textContent = `📢 RESULT DECLARED: "${newestLive.examName} (${newestLive.year})" ka Result LIVE ho chuka hai! Direct Result dekhne ke liye yahan click karein`;
+
+    if (homeResultLiveBox) {
+      homeResultLiveBox.innerHTML = `
+        <span style="color:#4ADE80;font-weight:800;">● LIVE NOW:</span> 
+        <strong>${newestLive.examName} (${newestLive.year})</strong> — 
+        <a href="${newestLive.resultLink}" target="_blank" style="color:var(--gold);text-decoration:underline;font-weight:700;">Direct Link ↗</a>
+      `;
+    }
+  } else {
+    document.body.classList.remove("has-live-result");
+    liveTicker.classList.remove("active");
+    if (homeResultLiveBox) {
+      homeResultLiveBox.textContent = `${exams.length} Exam(s) listed in portal. Click "Open Exam Results Portal" to view year-wise table.`;
+    }
+  }
+
+  // 2. Render Admin Table
+  exams.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  adminExamTableBody.innerHTML = "";
+
+  if (exams.length === 0) {
+    adminExamTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-soft);">No exams added yet. Add an exam above!</td></tr>`;
+    return;
+  }
+
+  exams.forEach((exam) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${exam.year}</strong></td>
+      <td>
+        <div style="font-weight:700;color:var(--navy);">${exam.examName}</div>
+        <a href="${exam.resultLink}" target="_blank" style="font-size:11px;color:var(--royal-blue);">Preview Link ↗</a>
+      </td>
+      <td>
+        ${exam.isLive
+          ? '<span style="color:#16A34A;font-weight:800;">● LIVE</span>'
+          : '<span style="color:#64748B;font-weight:600;">Disabled</span>'}
+      </td>
+      <td style="white-space:nowrap;">
+        <button type="button" class="btn-live-toggle ${exam.isLive ? 'btn-stop-live' : 'btn-go-live'}" data-id="${exam.id}" data-live="${exam.isLive}">
+          ${exam.isLive ? 'Disable Result' : 'Make Result Live'}
+        </button>
+        <button type="button" class="btn-del-exam" data-del="${exam.id}" title="Delete Exam">🗑️</button>
+      </td>
+    `;
+    adminExamTableBody.appendChild(tr);
+  });
+
+  // Attach Live Toggle Handlers
+  document.querySelectorAll(".btn-live-toggle").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const isCurrentlyLive = btn.getAttribute("data-live") === "true";
+      await updateDoc(doc(db, "exams", id), {
+        isLive: !isCurrentlyLive,
+        liveUpdatedAt: !isCurrentlyLive ? Date.now() : 0
+      });
+    });
+  });
+
+  // Attach Delete Handlers
+  document.querySelectorAll(".btn-del-exam").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-del");
+      if (confirm("Are you sure you want to delete this exam?")) {
+        await deleteDoc(doc(db, "exams", id));
+      }
+    });
   });
 });
 </script>
